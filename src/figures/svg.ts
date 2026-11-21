@@ -34,6 +34,7 @@ const COL = {
   padDark: "color-mix(in srgb, var(--ink) 30%, var(--bg))",
   cable: "color-mix(in srgb, var(--ink) 72%, var(--bg))",
   shadow: "color-mix(in srgb, var(--ink) 10%, var(--bg))",
+  hair: "color-mix(in srgb, var(--ink) 38%, var(--bg))",
 };
 
 interface Prim { z: number; svg: string }
@@ -162,7 +163,7 @@ function bodyPrims(c: Cam, s: Solved, hl: Set<Muscle>): Prim[] {
     if (m === "chest") for (const sg of [1, -1]) patch(at(chestC, C, 0.1, 0.02, sg * 0.08), C.X.clone().add(C.Z.clone().multiplyScalar(sg * 0.3)), 0.06, 0.05);
     if (m === "abs") patch(at(p.waist, W, 0.09, -0.04, 0), W.X, 0.07, 0.12);
     if (m === "obliques") for (const sg of [1, -1]) patch(at(p.waist, W, 0.02, -0.04, sg * 0.13), W.Z.clone().multiplyScalar(sg).add(W.X.clone().multiplyScalar(0.5)), 0.065, 0.11);
-    if (m === "upperBack") patch(at(chestC, C, -0.11, 0.0, 0), C.X.clone().negate(), 0.1, 0.07);
+    if (m === "upperBack") for (const sg of [1, -1]) patch(at(chestC, C, -0.11, 0.0, sg * 0.055), C.X.clone().negate(), 0.04, 0.075);
     if (m === "lats") for (const sg of [1, -1]) patch(at(p.waist, W, -0.07, 0.08, sg * 0.11), W.X.clone().negate().add(W.Z.clone().multiplyScalar(sg * 0.6)), 0.05, 0.11);
     if (m === "lowerBack") patch(at(p.waist, W, -0.1, -0.08, 0), W.X.clone().negate(), 0.06, 0.07);
     if (m === "traps") patch(at(p.chest, C, -0.06, -0.01, 0), C.X.clone().negate().add(C.Y), 0.08, 0.04);
@@ -197,6 +198,14 @@ function bodyPrims(c: Cam, s: Solved, hl: Set<Muscle>): Prim[] {
   let head = `<circle cx="${f1(hx)}" cy="${f1(hy)}" r="${f1(headR + 1.2)}" fill="${COL.edge}"/>`;
   if (noseVisible) head += `<line x1="${f1(hx)}" y1="${f1(hy)}" x2="${f1(nx)}" y2="${f1(ny)}" stroke="${COL.near}" stroke-width="${f1(0.06 * S)}" stroke-linecap="round"/>`;
   head += `<circle cx="${f1(hx)}" cy="${f1(hy)}" r="${f1(headR)}" fill="${COL.near}"/>`;
+  // Hair on the back and top of the head: tells front from back at a glance.
+  const hairC = p.head.clone().sub(C.X.clone().multiplyScalar(0.035)).add(C.Y.clone().multiplyScalar(0.03));
+  const backVis = C.X.clone().negate().add(C.Y.clone().multiplyScalar(0.6)).normalize().dot(c.back);
+  if (backVis > -0.35) {
+    const [cx, cy] = proj(c, hairC);
+    const r = headR * (0.62 + 0.22 * Math.max(0, backVis));
+    head += `<circle cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(r)}" fill="${COL.hair}"/>`;
+  }
   out.push({ z: depth(c, p.head) - 0.02, svg: head });
   return out;
 }

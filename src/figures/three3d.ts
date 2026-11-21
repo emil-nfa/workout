@@ -23,6 +23,7 @@ export class Mannequin3D {
   private metal = new THREE.MeshStandardMaterial({ color: COLORS.metal, roughness: 0.5, metalness: 0.1 });
   private pad = new THREE.MeshStandardMaterial({ color: COLORS.pad, roughness: 0.85, metalness: 0.0 });
   private cableMat = new THREE.MeshStandardMaterial({ color: COLORS.cable, roughness: 0.6 });
+  private hair = new THREE.MeshStandardMaterial({ color: 0x3b3631, roughness: 0.9 });
   private parts = new Map<string, THREE.Mesh>();
   private items = new Map<string, THREE.Object3D>();
   private hl: Set<Muscle>;
@@ -162,6 +163,9 @@ export class Mannequin3D {
     const headQ = qC.clone();
     this.ball("head", p.head, [0.1, 0.12, 0.09], this.body, headQ);
     this.ball("nose", p.head.clone().lerp(p.nose, 0.7), [0.03, 0.035, 0.03], this.body, headQ);
+    // Hair cap on the back and top of the head: front vs back reads instantly.
+    const hairAt = p.head.clone().add(new THREE.Vector3(-0.022, 0.022, 0).applyQuaternion(headQ));
+    this.ball("hair", hairAt, [0.092, 0.105, 0.088], this.hair, headQ);
 
     // Torso muscle patches, slightly proud of the surface.
     const X = (qq: THREE.Quaternion) => new THREE.Vector3(1, 0, 0).applyQuaternion(qq);
@@ -169,7 +173,7 @@ export class Mannequin3D {
     const patch = (key: string, at: THREE.Vector3, size: [number, number, number], qq: THREE.Quaternion) => this.ball(key, at, size, this.accent, qq);
     const chestC = p.chest.clone().sub(up(qC).multiplyScalar(0.1));
     for (const mu of this.hl) {
-      if (mu === "upperBack") patch("upperBack", chestC.clone().add(X(qC).multiplyScalar(-0.07)), [0.06, 0.12, 0.16], qC);
+      if (mu === "upperBack") for (const sg of [1, -1]) patch(`upperBack${sg}`, chestC.clone().add(X(qC).multiplyScalar(-0.075)).add(Z(qC).multiplyScalar(sg * 0.06)), [0.05, 0.1, 0.05], qC);
       if (mu === "abs") patch("abs", p.waist.clone().add(X(qW).multiplyScalar(0.06)).sub(up(qW).multiplyScalar(0.05)), [0.05, 0.11, 0.08], qW);
       if (mu === "obliques") for (const sg of [1, -1]) patch(`obl${sg}`, p.waist.clone().add(Z(qW).multiplyScalar(sg * 0.11)).sub(up(qW).multiplyScalar(0.05)).add(X(qW).multiplyScalar(0.015)), [0.06, 0.1, 0.05], qW);
       if (mu === "glutes") for (const sg of [1, -1]) patch(`glute${sg}`, p.pelvis.clone().add(X(qP).multiplyScalar(-0.07)).add(Z(qP).multiplyScalar(sg * 0.075)).sub(up(qP).multiplyScalar(0.05)), [0.06, 0.08, 0.07], qP);
