@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "workout-dev", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "--base", "/", "--port", "5191", "--strictPort"], "port": 5191 },
+    { "name": "workout-preview", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "preview", "--base", "/", "--port", "5192", "--strictPort"], "port": 5192 }
+  ]
+}
