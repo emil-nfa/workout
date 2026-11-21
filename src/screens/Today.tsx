@@ -95,7 +95,7 @@ export function Today() {
               <h2>Train something else</h2>
               <div className="seg" role="group" aria-label="Pick a session">
                 {program.sessions.map((s) => (
-                  <button key={s.key} aria-pressed={s.key === key} onClick={() => setPick(s.key === next ? null : s.key)}>
+                  <button key={s.key} aria-pressed={s.key === key} aria-label={`Session ${s.key}, ${s.title}`} onClick={() => setPick(s.key === next ? null : s.key)}>
                     <span className="num">{s.key}</span>
                   </button>
                 ))}

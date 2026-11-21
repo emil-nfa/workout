@@ -36,11 +36,6 @@ export default function App() {
     document.documentElement.dataset.text = settings?.textSize ?? "normal";
   }, [settings?.textSize]);
 
-  // The player closes itself when its session ends; reopen state is kept only while a session is active.
-  useEffect(() => {
-    if (active === undefined && player.open && player.kind === "workout") setPlayer({ open: false });
-  }, [active, player]);
-
   if (!ready || !settings) return null;
 
   const hasMini = !player.open && (!!active || player.kind === "stretch");

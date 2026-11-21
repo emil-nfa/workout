@@ -3,9 +3,10 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ChevronDown } from "lucide-react";
 import { db, newId } from "../db/db";
 import { useApp } from "../state";
-import { EXERCISE_BY_ID } from "../data/exercises";
 import { STRETCH_ROUTINES } from "../data/stretches";
 import { fmtClock, localDate } from "../logic/rotation";
+import { Workout } from "./Workout";
+import type { RestState } from "./RestBar";
 import { keepAwake } from "../lib/platform";
 
 /** Ticks every second; time shown is always computed from timestamps, so it is right after the screen locks. */
@@ -45,6 +46,8 @@ export function Player() {
   }, []);
 
   const minimise = () => setPlayer({ ...player, open: false });
+  const [held, setHeld] = useState(activeSession);
+  useEffect(() => { if (activeSession) setHeld(activeSession); }, [activeSession]);
 
   if (player.kind === "stretch") {
     const r = STRETCH_ROUTINES.find((x) => x.id === player.routineId)!;
@@ -63,25 +66,12 @@ export function Player() {
     );
   }
 
-  if (!activeSession || !program) return null;
-  const session = program.sessions.find((s) => s.key === activeSession.key);
-  const elapsed = (now - +new Date(activeSession.startedAt)) / 1000;
-
-  const finish = async (status: "finished" | "discarded") => {
-    await db.sessions.update(activeSession.id, { status, endedAt: new Date().toISOString() });
-    setPlayer({ open: false });
-  };
-
-  return (
-    <div data-mode="gym" style={{ minHeight: "100dvh", padding: "calc(var(--safe-t) + var(--s4)) var(--s4) calc(var(--safe-b) + var(--s4))", display: "flex", flexDirection: "column" }}>
-      <Header title={`${activeSession.key} · ${session?.title ?? "Workout"}`} clock={fmtClock(elapsed)} onMin={minimise} />
-      <ol style={{ flex: 1, paddingLeft: "1.2em" }}>
-        {session?.slots.map((s, i) => <li key={i} style={{ padding: "var(--s2) 0" }}>{EXERCISE_BY_ID[s.exerciseId]?.name}</li>)}
-      </ol>
-      <button className="btn primary big" onClick={() => finish("finished")}>Finish</button>
-      <button className="btn danger big" style={{ marginTop: "var(--s2)" }} onClick={() => finish("discarded")}>Discard workout</button>
-    </div>
-  );
+  // Keep the session after it ends so the finish summary can show (it closes the player itself).
+  const s = activeSession ?? held;
+  if (!s || !program) return null;
+  const session = program.sessions.find((x) => x.key === s.key);
+  if (!session) return null;
+  return <Workout key={s.id} session={s} ps={session} />;
 }
 
 function Header({ title, clock, onMin }: { title: string; clock: string; onMin: () => void }) {
@@ -97,14 +87,20 @@ function Header({ title, clock, onMin }: { title: string; clock: string; onMin: 
 export function MiniPlayer() {
   const { player, setPlayer, activeSession } = useApp();
   const now = useNow();
+  const rest = useLiveQuery(() => db.meta.get("rest"))?.value as RestState | undefined;
   const started = player.kind === "stretch" ? player.startedAt : activeSession?.startedAt;
   if (!started) return null;
   const label = player.kind === "stretch" ? "Stretch in progress" : `Workout ${activeSession?.key} in progress`;
+  const restLeft = rest && player.kind !== "stretch" ? Math.ceil((rest.endsAt - now) / 1000) : null;
   return (
     <button data-mode="gym" className="mini" onClick={() => setPlayer({ ...player, kind: player.kind ?? "workout", open: true } as typeof player)}>
       <span style={{ width: 4, alignSelf: "stretch", background: "var(--accent)", margin: "12px 0" }} aria-hidden />
       <span style={{ flex: 1, fontWeight: 600 }}>{label}</span>
-      <span className="num" style={{ fontSize: "1.5rem", fontWeight: 600 }}>{fmtClock((now - +new Date(started)) / 1000)}</span>
+      {restLeft !== null && restLeft > 0 ? (
+        <span className="num" style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }} aria-label="Rest left">Rest {fmtClock(restLeft)}</span>
+      ) : (
+        <span className="num" style={{ fontSize: "1.5rem", fontWeight: 600 }}>{fmtClock((now - +new Date(started)) / 1000)}</span>
+      )}
     </button>
   );
 }

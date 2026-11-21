@@ -60,6 +60,8 @@ export interface LoggedSet {
   durationSec?: number;
   distanceM?: number;
   done: boolean;
+  /** True once the user typed a value: shown full brightness even before the tick. */
+  edited?: boolean;
   note?: string;
   at?: string; // ISO datetime when ticked
 }
