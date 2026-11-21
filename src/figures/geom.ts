@@ -13,7 +13,33 @@ export function jointPos(s: Solved, j: JointRef): Vector3 {
 }
 
 /** Where an item is this frame (items can follow a joint, e.g. a leg-press platform under the feet). */
+const refPos = (s: Solved, r: JointRef | V3) => (Array.isArray(r) ? vec(r) : jointPos(s, r));
+
+/** Dumbbell ends (world) for this frame. */
+export function dbEnds(item: Extract<Item, { kind: "db" }>, s: Solved): [Vector3, Vector3] {
+  const k = item.hand.slice(-1) as "L" | "R";
+  const h = s.p[item.hand];
+  let axis: Vector3;
+  if (item.grip === "z") axis = new Vector3(0, 0, 1);
+  else {
+    const fore = h.clone().sub(s.p[`elbow${k}`]).normalize();
+    axis = fore.clone().cross(new Vector3(0, 0, 1)).normalize();
+    if (axis.lengthSq() < 1e-6) axis.set(1, 0, 0);
+  }
+  const half = 0.15;
+  return [h.clone().add(axis.clone().multiplyScalar(half)), h.clone().sub(axis.clone().multiplyScalar(half))];
+}
+
+export function bandEnds(item: Extract<Item, { kind: "band" }>, s: Solved): [Vector3, Vector3] {
+  return [refPos(s, item.a), refPos(s, item.b)];
+}
+
 export function placed(item: Item, s: Solved): Item {
+  if (item.kind === "db") {
+    const [a, b] = dbEnds(item, s);
+    return { id: item.id, kind: "cyl", a: [a.x, a.y, a.z], b: [b.x, b.y, b.z], r: 0.05, look: "metal", frame: item.frame };
+  }
+  if (item.kind === "band") return item;
   if (item.kind === "rod") {
     const j = jointPos(s, item.to).add(vec(item.toOffset ?? [0, 0, 0]));
     return { id: item.id, kind: "cyl", a: item.from, b: [j.x, j.y, j.z], r: item.r, look: item.look, frame: item.frame };

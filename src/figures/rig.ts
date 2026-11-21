@@ -30,7 +30,8 @@ export interface LimbTarget {
 export interface Pose {
   root: { pos: V3; pitch?: number; yaw?: number; roll?: number };
   spine?: { flex?: number; side?: number; twist?: number };
-  neck?: { flex?: number; twist?: number };
+  /** flex tilts the neck forward from the chest; head pitches the head forward on top of the neck. */
+  neck?: { flex?: number; twist?: number; head?: number };
   armL?: ArmAngles | LimbTarget; armR?: ArmAngles | LimbTarget;
   legL?: LegAngles | LimbTarget; legR?: LegAngles | LimbTarget;
 }
@@ -40,7 +41,7 @@ export type Joint =
   | "hipL" | "kneeL" | "ankleL" | "heelL" | "toeL" | "hipR" | "kneeR" | "ankleR" | "heelR" | "toeR"
   | "shoulderL" | "elbowL" | "wristL" | "handL" | "shoulderR" | "elbowR" | "wristR" | "handR";
 
-export interface Frames { pelvis: Matrix4; waist: Matrix4; chest: Matrix4 }
+export interface Frames { pelvis: Matrix4; waist: Matrix4; chest: Matrix4; head: Matrix4 }
 
 export interface Solved {
   p: Record<Joint, Vector3>;
@@ -80,7 +81,8 @@ function twoBone(parent: Matrix4, rootLocal: Vector3, l1: number, l2: number, ta
   const pl = v(pole).applyMatrix4(inv).sub(root);
   let d = t.length();
   let error: string | undefined;
-  if (d > l1 + l2 - 1e-4) { error = `target out of reach by ${(d - (l1 + l2)).toFixed(3)} m`; d = l1 + l2 - 1e-4; }
+  // Up to 1.5 cm over full reach is clamped silently (invisible); more is an error.
+  if (d > l1 + l2 - 1e-4) { if (d > l1 + l2 + 0.015) error = `target out of reach by ${(d - (l1 + l2)).toFixed(3)} m`; d = l1 + l2 - 1e-4; }
   if (d < Math.abs(l1 - l2) + 1e-4) { error = "target too close"; d = Math.abs(l1 - l2) + 1e-4; }
   const dir = t.clone().normalize();
   // Bend plane: from the root toward the pole, minus its component along the chain.
@@ -125,14 +127,17 @@ export function solve(pose: Pose): Solved {
   angles.spineFlex = sp.flex ?? 0;
 
   const p = {} as Record<Joint, Vector3>;
+  const frames: Frames = { pelvis, waist: waistTop, chest, head: chest };
   p.pelvis = origin(pelvis);
   p.waist = origin(waistTop);
   p.chest = origin(chest);
   const nk = pose.neck ?? {};
   const neckM = compose(chest, new Vector3(0, 0, 0), rot(-(nk.flex ?? 0), 0, nk.twist ?? 0));
   p.neckTop = apply(neckM, new Vector3(0, LEN.neck, 0));
-  p.head = apply(neckM, new Vector3(0.015, LEN.neck + LEN.head * 0.95, 0));
-  p.nose = apply(neckM, new Vector3(LEN.head + 0.02, LEN.neck + LEN.head * 0.9, 0));
+  const headM = compose(neckM, new Vector3(0, LEN.neck, 0), rot(-(nk.head ?? 0), 0, 0));
+  p.head = apply(headM, new Vector3(0.015, LEN.head * 0.95, 0));
+  p.nose = apply(headM, new Vector3(LEN.head + 0.02, LEN.head * 0.9, 0));
+  frames.head = headM;
 
   for (const s of ["L", "R"] as Side[]) {
     const sg = s === "L" ? 1 : -1;
@@ -178,7 +183,7 @@ export function solve(pose: Pose): Solved {
     p[`hand${s}`] = apply(elM, new Vector3(0, -LEN.forearm - LEN.hand * 0.5, 0)); // grip point
     Object.assign(angles, { [`shFlex${s}`]: A.flex, [`shAbd${s}`]: A.abd, [`elbow${s}`]: A.elbow });
   }
-  return { p, frames: { pelvis, waist: waistTop, chest }, angles, errors };
+  return { p, frames, angles, errors };
 }
 
 // ---------- interpolation over a looping timeline ----------

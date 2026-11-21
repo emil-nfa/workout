@@ -4,7 +4,7 @@
 import { Vector3 } from "three";
 import { solve, TORSO, WIDTH, type Solved } from "./rig";
 import type { Item, Motion, View } from "./motion";
-import { D, boxQuat, jointPos, placed, vec } from "./geom";
+import { D, bandEnds, boxQuat, jointPos, placed, vec } from "./geom";
 import type { Muscle } from "../data/types";
 
 const S = 100; // 1 m = 100 SVG units
@@ -51,11 +51,16 @@ function itemPrims(c: Cam, it: Item, s: Solved): Prim[] {
     const [x1, y1] = proj(c, a), [x2, y2] = proj(c, b);
     return [{ z: (depth(c, a) + depth(c, b)) / 2, svg: `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${COL.cable}" stroke-width="2.2" stroke-linecap="round"/>` }];
   }
+  if (it.kind === "band") {
+    const [a, b] = bandEnds(it, s);
+    const [x1, y1] = proj(c, a), [x2, y2] = proj(c, b);
+    return [{ z: Math.min(depth(c, a), depth(c, b)) - 0.02, svg: `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${COL.cable}" stroke-width="${it.look === "strap" ? 3 : 2.4}" stroke-linecap="round"/>` }];
+  }
   if (it.kind === "cyl") {
     const a = vec(it.a), b = vec(it.b);
     return [{ z: (depth(c, a) + depth(c, b)) / 2, svg: capsule(c, a, b, it.r * 2, it.look === "pad" ? COL.pad : COL.metalLight, false) }];
   }
-  if (it.kind === "rod" || it.look === "floor") return []; // rods arrive here already turned into cylinders by placed()
+  if (it.kind === "rod" || it.kind === "db" || it.look === "floor") return []; // rods arrive here already turned into cylinders by placed()
   // Box: draw the faces turned toward the camera, shaded by orientation (top lighter, sides darker).
   const q = boxQuat(it.rot), ctr = vec(it.center), h = it.size.map((x) => x / 2);
   const corner = (sx: number, sy: number, sz: number) => new Vector3(sx * h[0], sy * h[1], sz * h[2]).applyQuaternion(q).add(ctr);
@@ -199,8 +204,9 @@ function bodyPrims(c: Cam, s: Solved, hl: Set<Muscle>): Prim[] {
   if (noseVisible) head += `<line x1="${f1(hx)}" y1="${f1(hy)}" x2="${f1(nx)}" y2="${f1(ny)}" stroke="${COL.near}" stroke-width="${f1(0.06 * S)}" stroke-linecap="round"/>`;
   head += `<circle cx="${f1(hx)}" cy="${f1(hy)}" r="${f1(headR)}" fill="${COL.near}"/>`;
   // Hair on the back and top of the head: tells front from back at a glance.
-  const hairC = p.head.clone().sub(C.X.clone().multiplyScalar(0.035)).add(C.Y.clone().multiplyScalar(0.03));
-  const backVis = C.X.clone().negate().add(C.Y.clone().multiplyScalar(0.6)).normalize().dot(c.back);
+  const Hd = axes(s.frames.head);
+  const hairC = p.head.clone().sub(Hd.X.clone().multiplyScalar(0.035)).add(Hd.Y.clone().multiplyScalar(0.03));
+  const backVis = Hd.X.clone().negate().add(Hd.Y.clone().multiplyScalar(0.6)).normalize().dot(c.back);
   if (backVis > -0.35) {
     const [cx, cy] = proj(c, hairC);
     const r = headR * (0.62 + 0.22 * Math.max(0, backVis));

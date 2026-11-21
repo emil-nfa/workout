@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import { solve, TORSO, WIDTH, type Solved } from "./rig";
 import type { Item, Motion } from "./motion";
-import { boxQuat, jointPos, placed, vec } from "./geom";
+import { bandEnds, boxQuat, dbEnds, jointPos, placed, vec } from "./geom";
 import { camera } from "./svg";
 import type { Muscle } from "../data/types";
 
@@ -24,6 +24,8 @@ export class Mannequin3D {
   private pad = new THREE.MeshStandardMaterial({ color: COLORS.pad, roughness: 0.85, metalness: 0.0 });
   private cableMat = new THREE.MeshStandardMaterial({ color: COLORS.cable, roughness: 0.6 });
   private hair = new THREE.MeshStandardMaterial({ color: 0x3b3631, roughness: 0.9 });
+  private dark = new THREE.MeshStandardMaterial({ color: 0x4a4a4f, roughness: 0.45, metalness: 0.1 });
+  private bandMat = new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.7 });
   private parts = new Map<string, THREE.Mesh>();
   private items = new Map<string, THREE.Object3D>();
   private hl: Set<Muscle>;
@@ -106,6 +108,20 @@ export class Mannequin3D {
 
   private buildItems(s: Solved) {
     for (const it0 of this.m.items) {
+      if (it0.kind === "db") {
+        const [a, b] = dbEnds(it0, s);
+        this.rod(`item-${it0.id}-bar`, a, b, 0.016, this.metal);
+        const dir = b.clone().sub(a).normalize();
+        const r = it0.heads ?? 0.055;
+        this.rod(`item-${it0.id}-h1`, a.clone().sub(dir.clone().multiplyScalar(0.0)), a.clone().add(dir.clone().multiplyScalar(0.07)), r, this.dark);
+        this.rod(`item-${it0.id}-h2`, b.clone().sub(dir.clone().multiplyScalar(0.07)), b.clone(), r, this.dark);
+        continue;
+      }
+      if (it0.kind === "band") {
+        const [a, b] = bandEnds(it0, s);
+        this.rod(`item-${it0.id}`, a, b, it0.look === "strap" ? 0.014 : 0.01, it0.look === "strap" ? this.dark : this.bandMat);
+        continue;
+      }
       const it = placed(it0, s);
       if (it.kind === "box") {
         if (it.look === "floor") continue;
@@ -160,7 +176,7 @@ export class Mannequin3D {
     this.ball("waistE", p.pelvis.clone().lerp(p.waist, 0.75), [TORSO.waist.a, 0.14, TORSO.waist.b], this.body, qW);
     this.ball("chestE", p.chest.clone().sub(up(qC).multiplyScalar(0.13)), [TORSO.chest.a, 0.17, TORSO.chest.b], this.body, qC);
     this.rod("neck", p.chest, p.neckTop, WIDTH.neck / 2, this.body);
-    const headQ = qC.clone();
+    const headQ = q(s.frames.head);
     this.ball("head", p.head, [0.1, 0.12, 0.09], this.body, headQ);
     this.ball("nose", p.head.clone().lerp(p.nose, 0.7), [0.03, 0.035, 0.03], this.body, headQ);
     // Hair cap on the back and top of the head: front vs back reads instantly.

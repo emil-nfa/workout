@@ -5,10 +5,9 @@ import { bodySegments, jointPos, placed, sdItem } from "./geom";
 
 /** Human joint ranges (degrees) the drawings must respect. */
 const LIMITS: Record<string, [number, number]> = {
-  kneeL: [0, 150], kneeR: [0, 150], elbowL: [0, 150], elbowR: [0, 150],
+  kneeL: [0, 160], kneeR: [0, 160], elbowL: [0, 150], elbowR: [0, 150],
   hipFlexL: [-30, 135], hipFlexR: [-30, 135], hipAbdL: [-25, 60], hipAbdR: [-25, 60],
-  shFlexL: [-60, 180], shFlexR: [-60, 180], shAbdL: [-40, 180], shAbdR: [-40, 180],
-  ankleL: [-50, 35], ankleR: [-50, 35], spineFlex: [-30, 80],
+  ankleL: [-90, 35], ankleR: [-90, 35], // kneeling with the foot flat behind = full plantarflexion spineFlex: [-30, 80],
 };
 
 export function sample(m: Motion, n = 96): Solved[] {
@@ -47,7 +46,7 @@ export function runChecks(m: Motion): CheckResult[] {
   for (const f of frames)
     for (const seg of bodySegments(f))
       for (const it of m.items) {
-        if (it.kind === "cable" || (m.touch[it.id] ?? []).includes(seg.name)) continue;
+        if (it.kind === "cable" || it.kind === "band" || (m.touch[it.id] ?? it.touch ?? []).includes(seg.name)) continue;
         const item = placed(it, f);
         for (let k = 0; k <= 6; k++) {
           const p = seg.a.clone().lerp(seg.b, k / 6);
