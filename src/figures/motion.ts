@@ -5,10 +5,14 @@ import { poseAt, type Joint, type Key, type Pose, type Solved, type V3 } from ".
 
 export type JointRef = Joint | "handsMid" | "feetMid";
 
-export type Item =
+/** `frame: false` leaves an item out of the camera framing (e.g. the top of a tall column). */
+export type Item = { frame?: false } & (
   | { id: string; kind: "box"; center: V3; size: V3; rot?: V3; follow?: JointRef; look?: "metal" | "pad" | "floor" }
   | { id: string; kind: "cyl"; a: V3; b: V3; r: number; follow?: JointRef; look?: "metal" | "pad" }
-  | { id: string; kind: "cable"; from: V3; to: JointRef };
+  | { id: string; kind: "cable"; from: V3; to: JointRef }
+  /** A rigid lever from a fixed pivot to a moving joint (e.g. a pec-deck arm to the handle). */
+  | { id: string; kind: "rod"; from: V3; to: JointRef; toOffset?: V3; r: number; look?: "metal" | "pad" }
+);
 
 export interface View { name: string; yaw: number; elev: number }
 

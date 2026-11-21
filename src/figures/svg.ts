@@ -32,7 +32,7 @@ const COL = {
   metalLight: "color-mix(in srgb, var(--ink) 34%, var(--bg))",
   pad: "color-mix(in srgb, var(--ink) 40%, var(--bg))",
   padDark: "color-mix(in srgb, var(--ink) 30%, var(--bg))",
-  cable: "color-mix(in srgb, var(--ink) 55%, var(--bg))",
+  cable: "color-mix(in srgb, var(--ink) 72%, var(--bg))",
   shadow: "color-mix(in srgb, var(--ink) 10%, var(--bg))",
 };
 
@@ -48,13 +48,13 @@ function itemPrims(c: Cam, it: Item, s: Solved): Prim[] {
   if (it.kind === "cable") {
     const a = vec(it.from), b = jointPos(s, it.to);
     const [x1, y1] = proj(c, a), [x2, y2] = proj(c, b);
-    return [{ z: (depth(c, a) + depth(c, b)) / 2, svg: `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${COL.cable}" stroke-width="1.2" stroke-dasharray="3 2.5"/>` }];
+    return [{ z: (depth(c, a) + depth(c, b)) / 2, svg: `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${COL.cable}" stroke-width="2.2" stroke-linecap="round"/>` }];
   }
   if (it.kind === "cyl") {
     const a = vec(it.a), b = vec(it.b);
     return [{ z: (depth(c, a) + depth(c, b)) / 2, svg: capsule(c, a, b, it.r * 2, it.look === "pad" ? COL.pad : COL.metalLight, false) }];
   }
-  if (it.look === "floor") return [];
+  if (it.kind === "rod" || it.look === "floor") return []; // rods arrive here already turned into cylinders by placed()
   // Box: draw the faces turned toward the camera, shaded by orientation (top lighter, sides darker).
   const q = boxQuat(it.rot), ctr = vec(it.center), h = it.size.map((x) => x / 2);
   const corner = (sx: number, sy: number, sz: number) => new Vector3(sx * h[0], sy * h[1], sz * h[2]).applyQuaternion(q).add(ctr);
@@ -160,8 +160,8 @@ function bodyPrims(c: Cam, s: Solved, hl: Set<Muscle>): Prim[] {
   const W = fr.waist, C = fr.chest, P = fr.pelvis;
   for (const m of hl) {
     if (m === "chest") for (const sg of [1, -1]) patch(at(chestC, C, 0.1, 0.02, sg * 0.08), C.X.clone().add(C.Z.clone().multiplyScalar(sg * 0.3)), 0.06, 0.05);
-    if (m === "abs") patch(at(p.waist, W, 0.09, -0.04, 0), W.X, 0.05, 0.1);
-    if (m === "obliques") for (const sg of [1, -1]) patch(at(p.waist, W, 0.02, -0.04, sg * 0.13), W.Z.clone().multiplyScalar(sg).add(W.X.clone().multiplyScalar(0.5)), 0.05, 0.09);
+    if (m === "abs") patch(at(p.waist, W, 0.09, -0.04, 0), W.X, 0.07, 0.12);
+    if (m === "obliques") for (const sg of [1, -1]) patch(at(p.waist, W, 0.02, -0.04, sg * 0.13), W.Z.clone().multiplyScalar(sg).add(W.X.clone().multiplyScalar(0.5)), 0.065, 0.11);
     if (m === "upperBack") patch(at(chestC, C, -0.11, 0.0, 0), C.X.clone().negate(), 0.1, 0.07);
     if (m === "lats") for (const sg of [1, -1]) patch(at(p.waist, W, -0.07, 0.08, sg * 0.11), W.X.clone().negate().add(W.Z.clone().multiplyScalar(sg * 0.6)), 0.05, 0.11);
     if (m === "lowerBack") patch(at(p.waist, W, -0.1, -0.08, 0), W.X.clone().negate(), 0.06, 0.07);
@@ -219,6 +219,7 @@ export function boundsFor(m: Motion, view: View): Bounds {
     const s = solve(m.pose((i / 24) * m.period));
     for (const p of Object.values(s.p)) addP(p, 9);
     for (const it0 of m.items) {
+      if (it0.frame === false) continue;
       const it = placed(it0, s);
       if (it.kind === "box" && it.look !== "floor") {
         const q = boxQuat(it.rot), h = it.size.map((v) => v / 2);

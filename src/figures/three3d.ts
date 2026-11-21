@@ -7,7 +7,7 @@ import { boxQuat, jointPos, placed, vec } from "./geom";
 import { camera } from "./svg";
 import type { Muscle } from "../data/types";
 
-const COLORS = { bg: 0x171717, floor: 0x222222, body: 0xe6e0d4, accent: 0x6e8bff, metal: 0x66666b, pad: 0x7a7168, cable: 0x9a968e };
+const COLORS = { bg: 0x1f1f1f, floor: 0x2c2c2c, body: 0xe6e0d4, accent: 0x6e8bff, metal: 0x8c8c93, pad: 0x9c8f82, cable: 0xd8d4cc };
 
 const LIMB_MUSCLE: Partial<Record<Muscle, string[]>> = {
   quads: ["thigh"], hamstrings: ["thigh"], adductors: ["thigh"], hipFlexors: ["thigh"], calves: ["shin"],
@@ -62,7 +62,10 @@ export class Mannequin3D {
     for (let i = 0; i < 16; i++) {
       const s = solve(m.pose((i / 16) * m.period));
       pts.push(...Object.values(s.p));
-      for (const it of m.items) if (it.kind === "box" && it.look !== "floor") pts.push(vec(placed(it, s).kind === "box" ? (placed(it, s) as Extract<Item, { kind: "box" }>).center : it.center));
+      for (const it of m.items) {
+        if (it.frame === false || it.kind !== "box" || it.look === "floor") continue;
+        pts.push(vec((placed(it, s) as Extract<Item, { kind: "box" }>).center));
+      }
     }
     const box = new THREE.Box3().setFromPoints(pts);
     const center = box.getCenter(new THREE.Vector3());
@@ -117,7 +120,7 @@ export class Mannequin3D {
       } else if (it.kind === "cyl") {
         this.rod(`item-${it.id}`, vec(it.a), vec(it.b), it.r, it.look === "pad" ? this.pad : this.metal);
       } else {
-        this.rod(`item-${it.id}`, vec(it.from), jointPos(s, it.to), 0.006, this.cableMat);
+        if (it.kind === "cable") this.rod(`item-${it.id}`, vec(it.from), jointPos(s, it.to), 0.009, this.cableMat);
       }
     }
   }

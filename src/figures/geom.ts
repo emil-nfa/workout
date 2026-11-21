@@ -14,6 +14,10 @@ export function jointPos(s: Solved, j: JointRef): Vector3 {
 
 /** Where an item is this frame (items can follow a joint, e.g. a leg-press platform under the feet). */
 export function placed(item: Item, s: Solved): Item {
+  if (item.kind === "rod") {
+    const j = jointPos(s, item.to).add(vec(item.toOffset ?? [0, 0, 0]));
+    return { id: item.id, kind: "cyl", a: item.from, b: [j.x, j.y, j.z], r: item.r, look: item.look, frame: item.frame };
+  }
   if (item.kind === "cable" || !item.follow) return item;
   const o = jointPos(s, item.follow);
   if (item.kind === "box") return { ...item, center: [o.x + item.center[0], o.y + item.center[1], o.z + item.center[2]] };
