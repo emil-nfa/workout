@@ -8,7 +8,7 @@ export const STRETCH_ROUTINES: StretchRoutine[] = [
   {
     id: "morning",
     name: "Morning",
-    when: "Optional, 6 min: loosen up and set your posture",
+    when: "Optional: loosen up and set your posture",
     blocks: [
       {
         title: "Spine and hips",
@@ -31,7 +31,7 @@ export const STRETCH_ROUTINES: StretchRoutine[] = [
   {
     id: "evening",
     name: "Evening",
-    when: "The main flexibility work, 18 min, 5-7 evenings a week",
+    when: "The main flexibility work, 5-7 evenings a week",
     blocks: [
       {
         title: "Warm-up",

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ChevronDown } from "lucide-react";
-import { db, newId } from "../db/db";
+import { db } from "../db/db";
 import { useApp } from "../state";
-import { STRETCH_ROUTINES } from "../data/stretches";
-import { fmtClock, localDate } from "../logic/rotation";
+import { fmtClock } from "../logic/rotation";
 import { Workout } from "./Workout";
+import { StretchPlayer } from "./StretchPlayer";
 import type { RestState } from "./RestBar";
 import { keepAwake } from "../lib/platform";
 
@@ -21,10 +20,9 @@ export function useNow(ms = 1000): number {
   return now;
 }
 
-// M1: the full-screen layer, minimise, finish/discard. The logging screen (M2) and stretch player (M4) fill it.
+// The full-screen player layer: the workout logging screen or the guided stretch player.
 export function Player() {
-  const { player, setPlayer, activeSession, settings } = useApp();
-  const now = useNow();
+  const { player, activeSession, settings } = useApp();
   const program = useLiveQuery(() => db.programs.get(settings.activeProgramId), [settings.activeProgramId]);
 
   useEffect(() => {
@@ -45,26 +43,10 @@ export function Player() {
     };
   }, []);
 
-  const minimise = () => setPlayer({ ...player, open: false });
   const [held, setHeld] = useState(activeSession);
   useEffect(() => { if (activeSession) setHeld(activeSession); }, [activeSession]);
 
-  if (player.kind === "stretch") {
-    const r = STRETCH_ROUTINES.find((x) => x.id === player.routineId)!;
-    const elapsed = (now - +new Date(player.startedAt)) / 1000;
-    const finish = async () => {
-      await db.stretchLogs.put({ id: newId(), date: localDate(), routine: r.id, startedAt: player.startedAt, durationSec: Math.round(elapsed), completed: true });
-      setPlayer({ open: false });
-    };
-    return (
-      <div data-mode="gym" style={{ minHeight: "100dvh", padding: "calc(var(--safe-t) + var(--s4)) var(--s4) calc(var(--safe-b) + var(--s4))", display: "flex", flexDirection: "column" }}>
-        <Header title={`${r.name} stretch`} clock={fmtClock(elapsed)} onMin={minimise} />
-        <p className="muted" style={{ flex: 1 }}>The guided stretch player arrives in M4.</p>
-        <button className="btn primary big" onClick={finish}>Mark done</button>
-        <button className="btn big" style={{ marginTop: "var(--s2)" }} onClick={() => setPlayer({ open: false })}>Stop without saving</button>
-      </div>
-    );
-  }
+  if (player.kind === "stretch") return <div data-mode="gym"><StretchPlayer routineId={player.routineId} startedAt={player.startedAt} /></div>;
 
   // Keep the session after it ends so the finish summary can show (it closes the player itself).
   const s = activeSession ?? held;
@@ -72,16 +54,6 @@ export function Player() {
   const session = program.sessions.find((x) => x.key === s.key);
   if (!session) return null;
   return <Workout key={s.id} session={s} ps={session} />;
-}
-
-function Header({ title, clock, onMin }: { title: string; clock: string; onMin: () => void }) {
-  return (
-    <header style={{ display: "flex", alignItems: "center", gap: "var(--s3)", marginBottom: "var(--s4)" }}>
-      <button className="btn" aria-label="Minimise" onClick={onMin} style={{ width: "var(--tap)", padding: 0 }}><ChevronDown aria-hidden /></button>
-      <div style={{ flex: 1, fontWeight: 600 }}>{title}</div>
-      <div className="num" style={{ fontSize: "1.6rem", fontWeight: 600 }} aria-label="Elapsed time">{clock}</div>
-    </header>
-  );
 }
 
 export function MiniPlayer() {

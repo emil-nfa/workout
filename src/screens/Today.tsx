@@ -3,7 +3,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, newId } from "../db/db";
 import { useApp } from "../state";
 import { EXERCISE_BY_ID } from "../data/exercises";
-import { STRETCH_ROUTINES, routineSeconds } from "../data/stretches";
+import { STRETCH_ROUTINES } from "../data/stretches";
+import { buildTimeline, totalSeconds } from "../logic/stretchPlan";
 import { daysSince, estimateMinutes, localDate, nextSessionKey, streak } from "../logic/rotation";
 import { isStandalone, unlockAudio } from "../lib/platform";
 import type { SessionKey } from "../data/types";
@@ -113,7 +114,7 @@ export function Today() {
             {STRETCH_ROUTINES.map((r) => (
               <div key={r.id} className="row" style={{ alignItems: "center" }}>
                 <div className="grow">
-                  <h3>{r.name} <span className="num muted" style={{ fontWeight: 500 }}>{Math.round(routineSeconds(r) / 60)} min</span></h3>
+                  <h3>{r.name} <span className="num muted" style={{ fontWeight: 500 }}>{Math.round(totalSeconds(buildTimeline(r)) / 60)} min</span></h3>
                   <span className="muted" style={{ fontSize: "0.9rem" }}>{r.when}</span>
                 </div>
                 <button
