@@ -72,6 +72,10 @@ export interface ProgramSession {
 
 export interface Program {
   id: string;
+  /** Content version of the recommended program; a newer one replaces the stored copy unless the user edited it. */
+  version?: string;
+  /** True once the user changed the program in the editor: app updates then leave it alone. */
+  customized?: boolean;
   name: string;
   rotation: SessionKey[];
   sessions: ProgramSession[];

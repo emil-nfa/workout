@@ -74,3 +74,16 @@ describe("backup", () => {
     expect(() => parseBackup(strToU8(JSON.stringify({ foo: 1 })))).toThrow(/not a backup/);
   });
 });
+
+describe("program upgrades", () => {
+  it("replaces an older recommended program but keeps a customised one", async () => {
+    const { DEFAULT_PROGRAM } = await import("../data/program");
+    const d = new WorkoutDB(`up-${Date.now()}`);
+    await d.programs.put({ ...DEFAULT_PROGRAM, version: "old", sessions: [], updatedAt: "x" });
+    await ensureSeeded(d);
+    expect((await d.programs.get(DEFAULT_PROGRAM.id))?.sessions.length).toBe(DEFAULT_PROGRAM.sessions.length);
+    await d.programs.put({ ...DEFAULT_PROGRAM, version: "old", customized: true, sessions: [], updatedAt: "x" });
+    await ensureSeeded(d);
+    expect((await d.programs.get(DEFAULT_PROGRAM.id))?.sessions.length).toBe(0);
+  });
+});

@@ -232,7 +232,8 @@ export function boundsFor(m: Motion, view: View): Bounds {
   };
   for (let i = 0; i < 24; i++) {
     const s = solve(m.pose((i / 24) * m.period));
-    for (const p of Object.values(s.p)) addP(p, 9);
+    for (const p of m.frameJoints ? m.frameJoints.map((j) => s.p[j]) : Object.values(s.p)) addP(p, 9);
+    if (m.frameJoints) continue;
     for (const it0 of m.items) {
       if (it0.frame === false) continue;
       const it = placed(it0, s);

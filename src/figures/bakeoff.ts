@@ -63,53 +63,28 @@ if (sheet) {
   }
   app.innerHTML = h + `</div>`;
 } else {
-  let h = `<div class="wrap"><h1>Pick a style</h1><p class="q">Same movement, two ways of drawing it. Watch each one at full size and as a small icon, then tell me which you recognise faster at the gym.</p>`;
-  for (const id of ids) {
-    const m = MOTIONS[id], e = EXERCISE_BY_ID[id];
-    h += `<section data-id="${id}"><h2>${e.name}</h2><div class="fr">${e.fr}</div>
-      <div class="views">${m.views.map((v, i) => `<button data-view="${i}" aria-pressed="${i === 0}">${v.name}</button>`).join("")}</div>
-      <div class="pair">
-        <div class="cell"><div class="lbl">Style 1 · flat drawing</div><div class="stage"><svg data-anim="${id}" ${svgBox(m, m.views[0])} preserveAspectRatio="xMidYMid meet"></svg></div></div>
-        <div class="cell"><div class="lbl">Style 2 · 3D mannequin</div><div class="stage">${video(id)}</div></div>
-      </div>
-      <div class="thumbs"><span class="q">Icon size:</span>
-        <div class="t48">${figureSvg(m, m.tB, m.views[0], { arrow: false })}</div>
-        <div class="t48"><img src="${base}figures3d/${id}-48.png" alt=""></div>
-        <div class="light thumbs" style="margin:0"><div class="t48">${figureSvg(m, m.tB, m.views[0], { arrow: false })}</div><div class="t48"><img src="${base}figures3d/${id}-48.png" alt=""></div></div>
-      </div>
-      <p class="q" style="margin-top:10px"><b>How:</b> ${e.how[0]} ${e.how[1] ?? ""}</p>
-    </section>`;
-  }
-  h += `<h2>On the light notebook</h2><div class="light pair">${ids.map((id) => `<div class="stage"><svg data-anim="${id}" data-light ${svgBox(MOTIONS[id], MOTIONS[id].views[0])}></svg></div>`).join("")}</div></div>`;
-  app.innerHTML = h;
-
-  const viewOf: Record<string, number> = {};
-  app.querySelectorAll<HTMLButtonElement>("button[data-view]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const sec = b.closest("section")!;
-      const id = sec.dataset.id!;
-      viewOf[id] = Number(b.dataset.view);
-      sec.querySelectorAll("button[data-view]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-      const svg = sec.querySelector("svg[data-anim]")!;
-      const bb = boundsFor(MOTIONS[id], MOTIONS[id].views[viewOf[id]]);
-      svg.setAttribute("viewBox", `${bb.x} ${bb.y} ${bb.w} ${bb.h}`);
-    }),
-  );
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const t0 = performance.now();
-  let last = 0;
-  const tick = (now: number) => {
-    if (now - last > 40) {
-      last = now;
-      document.querySelectorAll<SVGSVGElement>("svg[data-anim]").forEach((svg) => {
-        const r = svg.getBoundingClientRect();
-        if (r.bottom < 0 || r.top > innerHeight) return;
-        const id = svg.dataset.anim!, m = MOTIONS[id];
-        const t = reduce ? m.tB : ((now - t0) / 1000) % m.period;
-        svg.innerHTML = figureInner(m, t, m.views[svg.hasAttribute("data-light") ? 0 : viewOf[id] ?? 0]);
-      });
+  // Gallery: every exercise in the chosen style (3D), for the user's own review (checking loop, step 5).
+  const groups = ["Back", "Chest", "Shoulders", "Posture", "Arms", "Legs", "Core", "Mobility", "Stretch"];
+  let h = `<div class="wrap"><h1>Exercise visuals</h1><p class="q">All ${Object.keys(MOTIONS).length} movements in the app. Watch each one: if a movement looks wrong or you can't tell what it is, send me its name.</p>`;
+  for (const g of groups) {
+    const list = Object.keys(MOTIONS).filter((id) => EXERCISE_BY_ID[id]?.group === g);
+    if (!list.length) continue;
+    h += `<h2>${g}</h2><div class="pair">`;
+    for (const id of list) {
+      const e = EXERCISE_BY_ID[id];
+      h += `<div class="cell"><div class="stage"><video data-lazy="${base}figures3d/${id}.mp4" poster="${base}figures3d/${id}.jpg" loop muted playsinline preload="none"></video></div>
+        <div style="font-weight:600;margin-top:6px">${e.name}</div><div class="fr" style="margin:0">${e.fr}</div></div>`;
     }
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+    h += `</div>`;
+  }
+  app.innerHTML = h + `<p class="q" style="margin-top:24px">${Object.keys(MOTIONS).length} movements · rendered from the app's rig, checked automatically against each how-to.</p></div>`;
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      const v = en.target as HTMLVideoElement;
+      if (en.isIntersecting) { if (!v.src) v.src = v.dataset.lazy!; void v.play().catch(() => {}); } else v.pause();
+    }
+  }, { rootMargin: "100px" });
+  document.querySelectorAll("video[data-lazy]").forEach((v) => io.observe(v));
+  void figureInner; void svgBox; void video;
 }
+

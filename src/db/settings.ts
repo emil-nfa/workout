@@ -24,7 +24,9 @@ export async function ensureSeeded(d: WorkoutDB = db): Promise<Settings> {
       s = { ...DEFAULT_SETTINGS, createdAt: new Date().toISOString() };
       await d.settings.put(s);
     }
-    if (!(await d.programs.get(DEFAULT_PROGRAM.id))) {
+    const stored = await d.programs.get(DEFAULT_PROGRAM.id);
+    // Seed on first launch; later, upgrade the recommended program when its content changes (never a customised one).
+    if (!stored || (!stored.customized && stored.version !== DEFAULT_PROGRAM.version)) {
       await d.programs.put({ ...DEFAULT_PROGRAM, updatedAt: new Date().toISOString() });
     }
     return s;

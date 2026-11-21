@@ -20,7 +20,7 @@ const quadHands = (() => { const s = solve({ root: { pos: [0, QUAD_Y, 0], pitch:
 const catCow = spec({
   exerciseId: "cat_cow",
   timing: swing(4.4, (k) => ({
-    root: { pos: [0, QUAD_Y, 0], pitch: 90 }, spine: { flex: -24 + 60 * k }, neck: { flex: -30 + 65 * k },
+    root: { pos: [0, QUAD_Y, 0], pitch: 90 - (-24 + 60 * k) }, spine: { flex: -24 + 60 * k }, neck: { flex: -30 + 65 * k },
     armL: armTo([quadHands.L, 0.035, 0.19], [0, 0.4, 0.5]), armR: armTo([quadHands.R, 0.035, -0.19], [0, 0.4, -0.5]),
     legL: { to: [-0.43, 0.06, 0.11], pole: [0.2, -1, 0.11], sole: [-1, -0.25, 0] }, legR: { to: [-0.43, 0.06, -0.11], pole: [0.2, -1, -0.11], sole: [-1, -0.25, 0] },
   })),
@@ -98,6 +98,7 @@ const chinTuck = spec({
   exerciseId: "chin_tuck",
   timing: rep(0.8, 1.6, 0.8, 0.6, (k) => ({ root: { pos: [0, STAND - 0.01, 0] }, ...feet(0, 0.12), neck: { flex: 14 - 24 * k, head: -14 + 24 * k }, armL: { flex: 4, abd: 6, elbow: 6 }, armR: { flex: 4, abd: 6, elbow: 6 } })),
   views: [{ name: "Side", yaw: -8, elev: 6 }],
+  frameJoints: ["head", "nose", "neckTop", "chest", "shoulderL", "shoulderR", "waist"],
   highlight: ["neck"],
   arrow: "nose",
   checks: [
@@ -213,7 +214,7 @@ const childLat = (() => {
   return spec({
     exerciseId: "child_lat", timing: { pose, period: P, tA: 0, tB: P / 4 },
     items: [floor(0.05), mat(0.05, 1.6, 0.9)],
-    views: [{ name: "Above, behind", yaw: 130, elev: 50 }],
+    views: [{ name: "Side 3/4", yaw: -30, elev: 28 }],
     highlight: ["lats"],
     arrow: "handsMid",
     fixed: [{ joint: "kneeL", tol: 0.025 }, { joint: "ankleL", tol: 0.003 }],
@@ -330,7 +331,7 @@ const glute4 = (() => {
   return spec({
     exerciseId: "glute_fig4", timing: rep(1.8, 2.2, 1.4, 0.6, pose),
     items: [floor(0.0), mat(0.0, 1.6)],
-    views: [{ name: "Side 3/4", yaw: -40, elev: 30 }],
+    views: [{ name: "From the feet, above", yaw: -72, elev: 44 }],
     highlight: ["glutes"],
     arrow: "kneeL",
     fixed: [{ joint: "pelvis", tol: 0.003 }],

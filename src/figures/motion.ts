@@ -37,6 +37,8 @@ export interface Motion {
   views: View[]; // first = default
   view3d: View;
   highlight: Muscle[];
+  /** Frame the camera on these joints only (close-ups, e.g. the chin tuck). */
+  frameJoints?: Joint[];
   arrow?: JointRef;
   /** Draw the arrow from B to A (the working direction, e.g. the leg-press push). */
   arrowReverse?: boolean;

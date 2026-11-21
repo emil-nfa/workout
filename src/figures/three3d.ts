@@ -64,7 +64,8 @@ export class Mannequin3D {
     const pts: THREE.Vector3[] = [];
     for (let i = 0; i < 16; i++) {
       const s = solve(m.pose((i / 16) * m.period));
-      pts.push(...Object.values(s.p));
+      pts.push(...(m.frameJoints ? m.frameJoints.map((j) => s.p[j]) : Object.values(s.p)));
+      if (m.frameJoints) continue;
       for (const it of m.items) {
         if (it.frame === false || it.kind !== "box" || it.look === "floor") continue;
         pts.push(vec((placed(it, s) as Extract<Item, { kind: "box" }>).center));
@@ -74,7 +75,7 @@ export class Mannequin3D {
     const center = box.getCenter(new THREE.Vector3());
     const radius = box.getSize(new THREE.Vector3()).length() / 2;
     this.cam = new THREE.PerspectiveCamera(28, 1, 0.1, 30);
-    const dist = (radius / Math.sin((28 * Math.PI) / 360)) * 1.0;
+    const dist = (radius / Math.sin((28 * Math.PI) / 360)) * (m.frameJoints ? 1.6 : 1.0);
     this.cam.position.copy(center.clone().add(c.back.clone().multiplyScalar(dist)));
     this.cam.lookAt(center);
   }

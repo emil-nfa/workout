@@ -3,6 +3,7 @@ import type { Program } from "./types";
 
 export const DEFAULT_PROGRAM: Program = {
   id: "default-v1",
+  version: "2026-11-21-research",
   name: "Upper / Lower rotation",
   rotation: ["A", "B", "C", "D"],
   // Final program after the M0 research: research/PROGRAM.md §3 (timed at 50-56 min, weeks 3+).

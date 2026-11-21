@@ -106,6 +106,7 @@ export interface SpecIn {
   highlight: Muscle[];
   arrow?: Motion["arrow"];
   arrowReverse?: boolean;
+  frameJoints?: Motion["frameJoints"];
   contacts?: Motion["contacts"];
   fixed?: Motion["fixed"];
   touch?: Motion["touch"];
@@ -115,7 +116,7 @@ export function spec(s: SpecIn): Motion {
   const views = s.views ?? [{ name: "Side 3/4", yaw: -28, elev: 16 }];
   return {
     exerciseId: s.exerciseId, ...s.timing, items: s.items ?? [floor()], views, view3d: s.view3d ?? views[0],
-    highlight: s.highlight, arrow: s.arrow, arrowReverse: s.arrowReverse,
+    highlight: s.highlight, frameJoints: s.frameJoints, arrow: s.arrow, arrowReverse: s.arrowReverse,
     contacts: s.contacts ?? [], fixed: s.fixed ?? [], touch: s.touch ?? {}, checks: s.checks ?? [],
   };
 }

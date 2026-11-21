@@ -14,6 +14,8 @@ import { Numpad, type PadField } from "./Numpad";
 import { RestBar, type RestState } from "./RestBar";
 import { FinishFlow } from "./Finish";
 import "./player.css";
+import { ExerciseThumb, ExerciseVideo } from "../components/ExerciseVisual";
+import { MachinePhoto } from "../components/MachinePhoto";
 
 const needsWeight = (t: LoadType) => t === "stack" || t === "dumbbell" || t === "plate" || t === "assisted" || t === "distance";
 const fmt = (n?: number) => (n === undefined ? "" : Number.isInteger(n) ? String(n) : String(+n.toFixed(2)));
@@ -198,7 +200,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
         return (
           <section key={i} id={`card-${i}`} className="card" aria-label={ex?.name}>
             <div className="card-top">
-              <button className="thumb" aria-label={`How to do ${ex?.name}`} onClick={() => setMenu({ kind: "how", exerciseId: exId })}>{ex?.group.slice(0, 4).toUpperCase()}</button>
+              <button className="thumb" style={{ padding: 0, overflow: "hidden" }} aria-label={`How to do ${ex?.name}`} onClick={() => setMenu({ kind: "how", exerciseId: exId })}><ExerciseThumb id={exId} label={ex?.group.slice(0, 4).toUpperCase()} /></button>
               <div className="card-name">
                 <div className="l1">
                   {slot.superset && <span className="ss-tag">{slot.superset.toUpperCase()}{ssIndex} </span>}
@@ -357,10 +359,13 @@ function MenuBody({ menu, session, ps, rows, info, setMenu, addSet, onFinish }: 
       <div>
         <h3 style={{ fontSize: "1.3rem" }}>{e.name}</h3>
         <p className="muted" style={{ marginTop: 0 }}>{e.fr}</p>
+        <ExerciseVideo id={e.id} name={e.name} />
+        {e.machine && <p style={{ marginBottom: 0 }}><b>Machine:</b> {e.machine}</p>}
         <ol style={{ paddingLeft: "1.2em" }}>{e.how.map((x, i) => <li key={i} style={{ marginBottom: 6 }}>{x}</li>)}</ol>
         {!!e.cues.length && <p><b>Cues:</b> {e.cues.join(" ")}</p>}
         {!!e.avoid.length && <p><b>Avoid:</b> {e.avoid.join(" ")}</p>}
-        <button className="btn big" onClick={() => setMenu(null)}>Close</button>
+        <MachinePhoto exerciseId={e.id} />
+        <button className="btn big" style={{ marginTop: "var(--s3)" }} onClick={() => setMenu(null)}>Close</button>
       </div>
     );
   }

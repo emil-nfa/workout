@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
+import { ExerciseThumb, ExerciseVideo } from "../components/ExerciseVisual";
+import { MachinePhoto } from "../components/MachinePhoto";
+import { BodyMap } from "../components/BodyMap";
 import { EXERCISES } from "../data/exercises";
 import type { Exercise, ExerciseGroup } from "../data/types";
 
 const GROUPS: ExerciseGroup[] = ["Back", "Chest", "Shoulders", "Posture", "Arms", "Legs", "Core", "Mobility", "Stretch"];
 
-// M1: searchable list + plain detail. Figures, body maps, machine photos and Learn arrive in M3/M5.
+// Searchable exercise list; detail page with the 3D loop, body map, machine at the gym and your own photo.
 export function Library() {
   const [q, setQ] = useState("");
   const [where, setWhere] = useState<"all" | "gym" | "home">("all");
@@ -43,6 +46,7 @@ export function Library() {
               {items.map((e) => (
                 <li key={e.id}>
                   <button className="row" style={{ width: "100%", border: 0, background: "none", textAlign: "left" }} onClick={() => { setOpen(e); scrollTo(0, 0); }}>
+                    <ExerciseThumb id={e.id} size={56} />
                     <span className="grow">
                       <span style={{ fontWeight: 600 }}>{e.name}</span><br />
                       <span className="muted" style={{ fontSize: "0.85rem" }}>{e.fr}</span>
@@ -66,15 +70,20 @@ function Detail({ e, onBack }: { e: Exercise; onBack: () => void }) {
       <button className="btn link" onClick={onBack} style={{ marginLeft: "calc(-1 * var(--s1))" }}>‹ Library</button>
       <h1>{e.name}</h1>
       <p className="lede">{e.fr}</p>
-      <p><b>Works:</b> {e.muscles}</p>
-      <p><b>Equipment:</b> {e.equipment}</p>
+      <ExerciseVideo id={e.id} name={e.name} />
       <h2>How to</h2>
       <ol>{e.how.map((x, i) => <li key={i}>{x}</li>)}</ol>
       {!!e.cues.length && (<><h2>Cues</h2><ul>{e.cues.map((x, i) => <li key={i}>{x}</li>)}</ul></>)}
       {!!e.avoid.length && (<><h2>Avoid</h2><ul>{e.avoid.map((x, i) => <li key={i}>{x}</li>)}</ul></>)}
       {e.progression && <p><b>Progress:</b> {e.progression}</p>}
+      <h2>Muscles</h2>
+      <p style={{ marginTop: 0 }}>{e.muscles}</p>
+      <BodyMap primary={e.primary} secondary={e.secondary} />
+      <h2>At the gym</h2>
+      <p style={{ marginTop: 0 }}><b>Machine:</b> {e.machine ?? e.equipment}</p>
       {e.alternative && <p><b>If it's taken:</b> {e.alternative}</p>}
-      <p><a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(e.name + " proper form")}`} target="_blank" rel="noreferrer">Watch videos on YouTube</a></p>
+      <MachinePhoto exerciseId={e.id} />
+      <p style={{ marginTop: "var(--s5)" }}><a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(e.name + " proper form")}`} target="_blank" rel="noreferrer">Watch videos on YouTube</a></p>
     </article>
   );
 }
