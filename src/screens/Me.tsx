@@ -6,6 +6,9 @@ import { useApp } from "../state";
 import { backupFileName, buildBackup, restoreBackup } from "../logic/backup";
 import { daysSince } from "../logic/rotation";
 import { isIOS, isStandalone, readFileBytes, saveFile, storageEstimate } from "../lib/platform";
+import { strToU8 } from "fflate";
+import { exportCsv, exportObsidianZip } from "../logic/exports";
+import { ProgramEditor } from "./ProgramEditor";
 
 export function Me() {
   const { settings } = useApp();
@@ -14,6 +17,7 @@ export function Me() {
   const [msg, setMsg] = useState<string>("");
   const [pending, setPending] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => { void storageEstimate().then(setEst); }, []);
 
@@ -44,12 +48,17 @@ export function Me() {
   }
 
   const age = daysSince(settings.lastBackupAt);
+  if (editing) return <ProgramEditor onBack={() => { setEditing(false); scrollTo(0, 0); }} />;
+  const stamp = new Date().toISOString().slice(0, 10);
   const persistState = (persist?.value as { state?: string } | undefined)?.state;
   const mb = (n: number) => (n / 1_048_576).toFixed(n < 10_485_760 ? 1 : 0);
 
   return (
     <>
       <h1>Me</h1>
+
+      <h2>Program</h2>
+      <button className="btn big" onClick={() => { setEditing(true); scrollTo(0, 0); }}>See and edit your program</button>
 
       <h2>Backup</h2>
       <p className="muted" style={{ marginTop: 0 }}>
@@ -74,6 +83,21 @@ export function Me() {
         </div>
       )}
       {msg && <p role="status" style={{ marginTop: "var(--s3)" }}>{msg}</p>}
+
+      <h2>Export</h2>
+      <div className="stack">
+        <button className="btn big" onClick={async () => { const r = await saveFile(strToU8(await exportCsv()), `workout-sets-${stamp}.csv`, "text/csv"); setMsg(r === "downloaded" ? "CSV downloaded." : ""); }}>Spreadsheet (CSV) of every set</button>
+        <button className="btn big" onClick={async () => { const r = await saveFile(await exportObsidianZip(), `workout-log-${stamp}.zip`, "application/zip"); setMsg(r === "downloaded" ? "Notes downloaded: unzip into your Obsidian vault." : ""); }}>Obsidian notes (one per session)</button>
+      </div>
+
+      <h2>Machines</h2>
+      <div className="field">
+        <span>Plate-loaded machines: enter the weight as</span>
+        <div className="seg" role="group" aria-label="Plate weight entry">
+          <button aria-pressed={settings.plateMode === "total"} onClick={() => updateSettings({ plateMode: "total" })}>Total plates</button>
+          <button aria-pressed={settings.plateMode === "perSide"} onClick={() => updateSettings({ plateMode: "perSide" })}>Per side</button>
+        </div>
+      </div>
 
       <h2>Display</h2>
       <div className="field">

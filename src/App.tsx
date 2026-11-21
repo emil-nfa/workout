@@ -8,6 +8,7 @@ import { Today } from "./screens/Today";
 import { Journal } from "./screens/Journal";
 import { Library } from "./screens/Library";
 import { Me } from "./screens/Me";
+import { Onboarding } from "./screens/Onboarding";
 import { Player, MiniPlayer } from "./player/Player";
 import { AppContext, type PlayerState, type Tab } from "./state";
 
@@ -44,7 +45,9 @@ export default function App() {
 
   return (
     <AppContext.Provider value={{ settings, tab, setTab, player, setPlayer, activeSession: active ?? null }}>
-      {player.open ? (
+      {!settings.onboarded ? (
+        <Onboarding />
+      ) : player.open ? (
         <Player />
       ) : (
         <>

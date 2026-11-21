@@ -35,7 +35,9 @@ export async function suggestionFor(session: WorkoutSession, slot: Slot, exercis
   const ex = EXERCISE_BY_ID[exerciseId];
   const loadType = ex?.loadType ?? "stack";
   const pref = await d.exercisePrefs.get(exerciseId);
-  const rampIn = (await finishedCount(d)) < RAMP_IN_SESSIONS;
+  // Ramp-in (fewer sets, ~3 reps left) for the first sessions, unless the user already lifts regularly.
+  const experience = (await d.settings.get("me"))?.experience;
+  const rampIn = experience !== "regular" && (await finishedCount(d)) < RAMP_IN_SESSIONS;
   return suggest(
     { sets: slot.sets, repMin: slot.repMin, repMax: slot.repMax, loadType },
     await exposuresFor(exerciseId, session.id, d),
@@ -70,7 +72,7 @@ export function materialize(session: WorkoutSession, ps: ProgramSession, d: Work
 }
 
 async function materializeNow(session: WorkoutSession, ps: ProgramSession, d: WorkoutDB): Promise<void> {
-  await d.transaction("rw", d.sets, d.sessions, d.exercisePrefs, async () => {
+  await d.transaction("rw", d.sets, d.sessions, d.exercisePrefs, d.settings, async () => {
     const fresh = (await d.sessions.get(session.id)) ?? session;
     if (fresh.status !== "active") return; // never plan sets on a finished or discarded session
     const existing = await d.sets.where("sessionId").equals(session.id).toArray();
@@ -106,7 +108,7 @@ export async function swapSlot(session: WorkoutSession, ps: ProgramSession, slot
   else delete swapTo[`${session.key}:${slotIndex}`];
   const updated = { ...session, swaps };
   const rows = rowsFromSuggestion(session.id, slotIndex, exId, await suggestionFor(updated, slot, exId, d));
-  await d.transaction("rw", d.sets, d.sessions, d.exercisePrefs, async () => {
+  await d.transaction("rw", d.sets, d.sessions, d.exercisePrefs, d.settings, async () => {
     await d.sets.bulkDelete(pending.map((r) => r.id));
     const doneCount = await d.sets.where("sessionId").equals(session.id).filter((r) => r.slot === slotIndex).count();
     await d.sets.bulkPut(rows.slice(doneCount).map((r, k) => ({ ...r, order: doneCount + k })));
