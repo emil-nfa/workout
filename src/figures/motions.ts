@@ -209,7 +209,10 @@ const RP = (() => {
 })();
 
 import { UPPER } from "./motions-upper";
+import { LOWER } from "./motions-lower";
+import { CORE } from "./motions-core";
+import { MOBILITY } from "./motions-mobility";
 
-export const MOTIONS: Record<string, Motion> = { leg_press: LP, pallof: PP, reverse_pec: RP, ...UPPER };
+export const MOTIONS: Record<string, Motion> = { leg_press: LP, pallof: PP, reverse_pec: RP, ...UPPER, ...LOWER, ...CORE, ...MOBILITY };
 export const BAKEOFF = ["leg_press", "pallof", "reverse_pec"] as const;
 void mix;

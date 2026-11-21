@@ -30,7 +30,7 @@ const rowChest = (() => {
       { id: "leverL", kind: "rod", look: "metal", from: [0.98, 1.3, 0.22], to: "handL", toOffset: [0, 0.06, 0], r: 0.02, touch: ["forearmL"] },
       { id: "leverR", kind: "rod", look: "metal", from: [0.98, 1.3, -0.22], to: "handR", toOffset: [0, 0.06, 0], r: 0.02, touch: ["forearmR"] },
     ],
-    views: [{ name: "Side 3/4", yaw: -35, elev: 22 }],
+    views: [{ name: "Behind 3/4", yaw: 140, elev: 26 }, { name: "Side 3/4", yaw: -35, elev: 22 }],
     highlight: ["upperBack", "lats", "rearDelts"],
     arrow: "handL",
     contacts: [{ joint: "chest", item: "pad", max: 0.2 }, { joint: "pelvis", item: "seat", max: 0.11 }],
@@ -198,7 +198,7 @@ const pushdown = (() => {
   return spec({
     exerciseId: "pushdown", timing: rep(0.9, 0.5, 1.6, 0.3, pose),
     items: [floor(), ...col.items, { id: "cable", kind: "cable", from: col.pulley, to: "handsMid" }, { id: "rope", kind: "band", a: "handL", b: "handR", look: "strap" }],
-    views: [{ name: "Side 3/4", yaw: -25, elev: 12 }],
+    views: [{ name: "Side 3/4", yaw: -50, elev: 14 }],
     highlight: ["triceps"],
     arrow: "handL",
     fixed: [{ joint: "elbowL", tol: 0.003 }, { joint: "chest", tol: 0.003 }],
@@ -255,7 +255,8 @@ const assistedPullup = (() => {
       floor(),
       { id: "bar", kind: "cyl", look: "metal", a: [0.06, barY + 0.02, 0.55], b: [0.06, barY + 0.02, -0.55], r: 0.02, touch: ["forearmL", "forearmR"] },
       { id: "pad", kind: "box", look: "pad", follow: "kneeL", center: [-0.1, -0.08, -0.09], size: [0.36, 0.06, 0.38], touch: ["shinL", "shinR", "thighL", "thighR"] },
-      { id: "frame", kind: "box", look: "metal", frame: false, center: [0.32, 1.1, 0], size: [0.1, 2.2, 0.8] },
+      { id: "uprightL", kind: "box", look: "metal", frame: false, center: [0.06, 1.05, 0.62], size: [0.08, 2.1, 0.08] },
+      { id: "uprightR", kind: "box", look: "metal", frame: false, center: [0.06, 1.05, -0.62], size: [0.08, 2.1, 0.08] },
     ],
     views: [{ name: "Side 3/4", yaw: -35, elev: 10 }],
     highlight: ["lats", "upperBack", "biceps"],
@@ -458,7 +459,7 @@ const bandPullApart = (() => {
   const reach = 0.612;
   const hand = (s: 1 | -1, h: number): V3 => { const sh0 = sh(STAND - 0.01, 0, s); return [sh0[0] + reach * Math.cos(h * D), sh0[1] - 0.02, sh0[2] + s * reach * Math.sin(h * D)]; };
   const pose = (k: number): Pose => {
-    const h = -13 + 98 * k;
+    const h = -6 + 91 * k;
     return { root: { pos: [0, STAND - 0.01, 0] }, ...feet(0, 0.12), ...both((s) => armTo(hand(s, h), add(hand(s, h), [-0.3, -0.5, s * 0.25]))) };
   };
   return spec({

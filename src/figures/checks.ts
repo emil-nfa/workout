@@ -6,8 +6,8 @@ import { bodySegments, jointPos, placed, sdItem } from "./geom";
 /** Human joint ranges (degrees) the drawings must respect. */
 const LIMITS: Record<string, [number, number]> = {
   kneeL: [0, 160], kneeR: [0, 160], elbowL: [0, 150], elbowR: [0, 150],
-  hipFlexL: [-30, 135], hipFlexR: [-30, 135], hipAbdL: [-25, 60], hipAbdR: [-25, 60],
-  ankleL: [-90, 35], ankleR: [-90, 35], // kneeling with the foot flat behind = full plantarflexion spineFlex: [-30, 80],
+  hipFlexL: [-30, 150], hipFlexR: [-30, 150], // passive stretches (child's pose) reach ~148° hipAbdL: [-25, 60], hipAbdR: [-25, 60],
+  ankleL: [-90, 42], ankleR: [-90, 42], // kneeling with the foot flat behind = full plantarflexion spineFlex: [-30, 80],
 };
 
 export function sample(m: Motion, n = 96): Solved[] {
