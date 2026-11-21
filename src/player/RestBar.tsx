@@ -17,7 +17,8 @@ export interface RestState {
  * −15 / +15 change THIS rest only; "Save as default" stores it for the exercise.
  */
 export function RestBar({ rest, now }: { rest: RestState; now: number }) {
-  const left = Math.ceil((rest.endsAt - now) / 1000);
+  // Never show more than this rest's length (the shared clock can be up to a second old when the rest starts).
+  const left = Math.min(rest.totalSec, Math.ceil((rest.endsAt - now) / 1000));
   const over = left <= 0;
   const beeped = useRef<number | null>(null);
 

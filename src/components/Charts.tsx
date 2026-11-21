@@ -10,7 +10,8 @@ const nice = (lo: number, hi: number) => {
   const span = hi - lo || Math.max(1, Math.abs(hi) * 0.1);
   const step = Math.pow(10, Math.floor(Math.log10(span / 3)));
   const s = [1, 2, 2.5, 5, 10].map((k) => k * step).find((k) => span / k <= 4) ?? step * 10;
-  const a = Math.floor(lo / s) * s, b = Math.ceil(hi / s) * s;
+  let a = Math.floor(lo / s) * s, b = Math.ceil(hi / s) * s;
+  if (a === b) { a -= s; b += s; } // a single value still gets an axis around it
   const ticks: number[] = [];
   for (let v = a; v <= b + 1e-9; v += s) ticks.push(+v.toFixed(6));
   return ticks;

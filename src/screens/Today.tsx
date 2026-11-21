@@ -11,7 +11,9 @@ import type { SessionKey } from "../data/types";
 
 export function Today() {
   const { settings, setPlayer, activeSession, setTab } = useApp();
-  const [mode, setMode] = useState<"workout" | "stretch">("workout");
+  // Remember Workout / Stretch between visits (the player replaces this screen while it runs).
+  const [mode, setModeState] = useState<"workout" | "stretch">(() => { try { return localStorage.getItem("today-mode") === "stretch" ? "stretch" : "workout"; } catch { return "workout"; } });
+  const setMode = (m: "workout" | "stretch") => { setModeState(m); try { localStorage.setItem("today-mode", m); } catch { /* private mode */ } };
   const program = useLiveQuery(() => db.programs.get(settings.activeProgramId), [settings.activeProgramId]);
   const finished = useLiveQuery(() => db.sessions.orderBy("startedAt").reverse().filter((s) => s.status === "finished").toArray());
   const stretchDates = useLiveQuery(async () => new Set((await db.stretchLogs.toArray()).filter((l) => l.completed).map((l) => l.date)));
@@ -107,7 +109,7 @@ export function Today() {
         </section>
       ) : (
         <section aria-labelledby="stretch-h">
-          <p className="caps muted">Streak <span className="num">{streak(stretchDates)}</span> days</p>
+          <p className="caps muted">Streak <span className="num">{streak(stretchDates)}</span> {streak(stretchDates) === 1 ? "day" : "days"}</p>
           <h1 id="stretch-h">Stretch</h1>
           <p className="lede">Separate from the gym. Intensity 6-7 out of 10, never pain.</p>
           <div className="ruled">
