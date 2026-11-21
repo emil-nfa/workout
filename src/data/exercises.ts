@@ -37,8 +37,13 @@ export const EXERCISES: Exercise[] = [
       "Lifting the chest off the pad to swing the weight.",
       "Shrugging shoulders up to the ears."
     ],
-    "alternative": "Seated cable row",
-    "posture": true
+    "alternative": "Chest-supported dumbbell row on an incline bench",
+    "posture": true,
+    "machine": "Hammer Strength Iso-Lateral Low Row / Row (plate-loaded) or Technogym Low Row (stack)",
+    "sources": [
+      "R-post-3",
+      "R-vol-1"
+    ]
   },
   {
     "id": "chest_press",
@@ -73,7 +78,11 @@ export const EXERCISES: Exercise[] = [
       "Shoulders rolling forward at the end of each rep (bad for your posture goal).",
       "Bouncing out of the bottom."
     ],
-    "alternative": "Dumbbell bench press"
+    "alternative": "Dumbbell bench press, flat bench",
+    "machine": "Technogym Chest Press (stack) or Hammer Iso-Lateral Chest Press",
+    "sources": [
+      "R-load-2"
+    ]
   },
   {
     "id": "lat_pulldown",
@@ -109,8 +118,12 @@ export const EXERCISES: Exercise[] = [
       "Pulling the bar behind the neck.",
       "Leaning back so far it becomes a row."
     ],
-    "alternative": "Assisted pull-up",
-    "posture": true
+    "alternative": "Kneeling one-arm pulldown at the cable pulley",
+    "posture": true,
+    "machine": "Technogym Lat Machine / Pulldown or Hammer Iso-Lateral Front Pulldown",
+    "sources": [
+      "R-rom-2"
+    ]
   },
   {
     "id": "assisted_pullup",
@@ -144,8 +157,12 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Half reps that stop with bent arms."
     ],
-    "alternative": "Neutral-grip lat pulldown",
-    "progression": "Each time you hit the top of the range, REDUCE the assistance by one plate."
+    "alternative": "Lat pulldown, neutral (palms facing) grip",
+    "progression": "Each time you hit the top of the range, REDUCE the assistance by one plate.",
+    "machine": "Assisted chin/dip machine (Technogym or similar), knee pad",
+    "sources": [
+      "R-load-2"
+    ]
   },
   {
     "id": "incline_db",
@@ -180,7 +197,11 @@ export const EXERCISES: Exercise[] = [
       "Bench too steep (becomes a shoulder press).",
       "Clanking dumbbells at the top."
     ],
-    "alternative": "Incline machine press"
+    "alternative": "Technogym Incline Press or Hammer Iso-Lateral Incline Press",
+    "machine": "Incline bench + dumbbells",
+    "sources": [
+      "R-load-1"
+    ]
   },
   {
     "id": "db_shoulder",
@@ -214,7 +235,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Arching back to push the weight."
     ],
-    "alternative": "Technogym \"Shoulder Press\" machine"
+    "alternative": "Technogym Shoulder Press (stack)",
+    "machine": "Adjustable bench almost upright + dumbbells",
+    "sources": [
+      "R-load-1"
+    ]
   },
   {
     "id": "face_pull",
@@ -250,7 +275,11 @@ export const EXERCISES: Exercise[] = [
       "Elbows dropping below the hands."
     ],
     "alternative": "Band pull-apart",
-    "posture": true
+    "posture": true,
+    "machine": "Cable pulley",
+    "sources": [
+      "R-post-1"
+    ]
   },
   {
     "id": "reverse_pec",
@@ -282,8 +311,12 @@ export const EXERCISES: Exercise[] = [
       "Shrugging up.",
       "Swinging with momentum."
     ],
-    "alternative": "Bent-over dumbbell reverse fly",
-    "posture": true
+    "alternative": "Cable reverse fly on the facing pulleys",
+    "posture": true,
+    "machine": "Technogym Pectoral / Rear Delt machine, facing the pad",
+    "sources": [
+      "R-post-1"
+    ]
   },
   {
     "id": "lateral_raise",
@@ -314,7 +347,11 @@ export const EXERCISES: Exercise[] = [
       "Swinging with the hips.",
       "Going far above shoulder height."
     ],
-    "alternative": "Cable lateral raise"
+    "alternative": "Cable lateral raise",
+    "machine": "Dumbbells",
+    "sources": [
+      "R-load-1"
+    ]
   },
   {
     "id": "db_row",
@@ -351,8 +388,12 @@ export const EXERCISES: Exercise[] = [
       "Rounded back.",
       "Jerking the weight up."
     ],
-    "alternative": "Chest-supported row",
-    "posture": true
+    "alternative": "Hammer Iso-Lateral Row, one arm at a time",
+    "posture": true,
+    "machine": "Flat bench + dumbbell",
+    "sources": [
+      "R-post-3"
+    ]
   },
   {
     "id": "cable_row",
@@ -387,7 +428,11 @@ export const EXERCISES: Exercise[] = [
       "Rocking back and forth to move the weight."
     ],
     "alternative": "Chest-supported row",
-    "posture": true
+    "posture": true,
+    "machine": "Low cable row station (Technogym Low Row or cable)",
+    "sources": [
+      "R-post-3"
+    ]
   },
   {
     "id": "db_curl",
@@ -417,7 +462,11 @@ export const EXERCISES: Exercise[] = [
       "Swinging the body.",
       "Half reps at the bottom."
     ],
-    "alternative": "Cable curl"
+    "alternative": "Cable curl",
+    "machine": "Dumbbells",
+    "sources": [
+      "R-vol-1"
+    ]
   },
   {
     "id": "hammer_curl",
@@ -446,7 +495,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Swinging."
     ],
-    "alternative": "Rope cable curl"
+    "alternative": "Rope cable curl",
+    "machine": "Dumbbells",
+    "sources": [
+      "R-vol-1"
+    ]
   },
   {
     "id": "pushdown",
@@ -475,7 +528,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Elbows drifting forward and back."
     ],
-    "alternative": "Machine triceps extension"
+    "alternative": "Bench dip",
+    "machine": "Cable pulley",
+    "sources": [
+      "R-ss-1"
+    ]
   },
   {
     "id": "oh_triceps",
@@ -505,7 +562,11 @@ export const EXERCISES: Exercise[] = [
       "Elbows flaring wide.",
       "Arching the lower back."
     ],
-    "alternative": "Dumbbell overhead extension"
+    "alternative": "One dumbbell overhead extension, seated",
+    "machine": "Cable pulley at head height, rope",
+    "sources": [
+      "R-ss-1"
+    ]
   },
   {
     "id": "pushup",
@@ -539,7 +600,11 @@ export const EXERCISES: Exercise[] = [
       "Hips sagging.",
       "Elbows flared at 90°."
     ],
-    "alternative": "Knee push-up or machine chest press"
+    "alternative": "Knee push-up",
+    "machine": "Floor",
+    "sources": [
+      "R-ss-1"
+    ]
   },
   {
     "id": "leg_press",
@@ -574,7 +639,11 @@ export const EXERCISES: Exercise[] = [
       "Lower back rounding off the seat at the bottom.",
       "Locking knees hard at the top."
     ],
-    "alternative": "Hack squat or Technogym seated leg press"
+    "alternative": "Smith-machine squat in a guided cage",
+    "machine": "Hammer Strength or Gym80 45° plate-loaded leg press, or Technogym Leg Press (stack)",
+    "sources": [
+      "R-load-1"
+    ]
   },
   {
     "id": "goblet_squat",
@@ -609,8 +678,12 @@ export const EXERCISES: Exercise[] = [
       "Heels lifting.",
       "Knees caving inward."
     ],
-    "alternative": "Hack squat machine",
-    "progression": "When the heaviest comfortable dumbbell (~30+ kg) is too easy for 12 reps, switch to hack squat or barbell back squat (ask a coach to check your form the first time)."
+    "alternative": "Leg press",
+    "progression": "When the heaviest comfortable dumbbell (~30+ kg) is too easy for 12 reps, switch to hack squat or barbell back squat (ask a coach to check your form the first time).",
+    "machine": "Dumbbell or kettlebell",
+    "sources": [
+      "R-load-1"
+    ]
   },
   {
     "id": "rdl",
@@ -645,7 +718,12 @@ export const EXERCISES: Exercise[] = [
       "Rounding the back to reach lower.",
       "Turning it into a squat."
     ],
-    "alternative": "Barbell RDL"
+    "alternative": "Barbell RDL in a cage",
+    "machine": "Dumbbells",
+    "sources": [
+      "R-str-8",
+      "R-fail-1"
+    ]
   },
   {
     "id": "leg_curl_seated",
@@ -674,7 +752,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Hips lifting off the seat."
     ],
-    "alternative": "Lying leg curl"
+    "alternative": "Lying leg curl",
+    "machine": "Technogym Leg Curl (stack)",
+    "sources": [
+      "R-vol-1"
+    ]
   },
   {
     "id": "leg_curl_lying",
@@ -705,7 +787,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Hips popping up."
     ],
-    "alternative": "Seated leg curl"
+    "alternative": "Seated leg curl",
+    "machine": "Lying leg curl machine",
+    "sources": [
+      "R-vol-1"
+    ]
   },
   {
     "id": "leg_ext",
@@ -734,7 +820,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Kicking the weight up fast."
     ],
-    "alternative": "Bulgarian split squat"
+    "alternative": "Goblet squat, 2 × 12-15",
+    "machine": "Technogym Leg Extension (stack); avoid the wobbly plate-loaded one if the stack version exists",
+    "sources": [
+      "R-vol-1"
+    ]
   },
   {
     "id": "bulgarian",
@@ -767,8 +857,12 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Front foot too close so the heel lifts."
     ],
-    "alternative": "Walking lunges",
-    "progression": "Start with bodyweight only for the first 1-2 weeks to learn the balance."
+    "alternative": "Reverse lunge with dumbbells",
+    "progression": "Start with bodyweight only for the first 1-2 weeks to learn the balance.",
+    "machine": "Flat bench + dumbbells",
+    "sources": [
+      "R-str-8"
+    ]
   },
   {
     "id": "calf_stand",
@@ -776,7 +870,7 @@ export const EXERCISES: Exercise[] = [
     "fr": "Mollets debout (machine)",
     "group": "Legs",
     "muscles": "Calves",
-    "equipment": "Standing calf machine, or the leg press platform",
+    "equipment": "No standing calf machine at this gym: the leg press sled (calf press) or a Smith machine with toes on a plate",
     "loadType": "stack",
     "tags": [
       "machine"
@@ -797,7 +891,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Bouncing."
     ],
-    "alternative": "Calf press on the leg press"
+    "alternative": "Single-leg calf raise on a step holding a dumbbell",
+    "machine": "No standing calf machine reported: use the leg press sled (calf press) or a Smith machine with toes on a plate",
+    "sources": [
+      "R-gym-3"
+    ]
   },
   {
     "id": "calf_seated",
@@ -825,7 +923,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Tiny bouncy reps."
     ],
-    "alternative": "Standing calf raise"
+    "alternative": "Calf press on the leg press",
+    "machine": "Seated calf machine (not confirmed)",
+    "sources": [
+      "R-vol-1"
+    ]
   },
   {
     "id": "back_ext",
@@ -859,8 +961,12 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Hyper-extending the lower back at the top."
     ],
-    "alternative": "Hip thrust or reverse hyper",
-    "posture": true
+    "alternative": "Cable pull-through at the low pulley, or Technogym Lower Back machine if present",
+    "posture": true,
+    "machine": "45° hyperextension bench (reported under repair at times)",
+    "sources": [
+      "R-post-2"
+    ]
   },
   {
     "id": "pallof",
@@ -892,7 +998,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Twisting toward the machine."
     ],
-    "alternative": "Band Pallof press at home"
+    "alternative": "Band Pallof press",
+    "machine": "Cable pulley at chest height",
+    "sources": [
+      "R-core-2"
+    ]
   },
   {
     "id": "dead_bug",
@@ -923,7 +1033,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Lower back lifting off the floor."
     ],
-    "alternative": "Plank"
+    "alternative": "Same at home",
+    "machine": "Mat, Abdos-stretch zone",
+    "sources": [
+      "R-core-1"
+    ]
   },
   {
     "id": "cable_crunch",
@@ -952,7 +1066,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Sitting back on your heels so the hips do the work."
     ],
-    "alternative": "Ab crunch machine"
+    "alternative": "Crunch on a mat",
+    "machine": "Cable pulley, top, rope",
+    "sources": [
+      "R-core-1"
+    ]
   },
   {
     "id": "knee_raise",
@@ -984,7 +1102,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Swinging to build momentum."
     ],
-    "alternative": "Lying leg raise"
+    "alternative": "Lying reverse crunch",
+    "machine": "Captain's chair or pull-up bar",
+    "sources": [
+      "R-core-2"
+    ]
   },
   {
     "id": "side_plank",
@@ -1015,7 +1137,11 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Hips sagging or piking."
     ],
-    "alternative": "Knees-bent side plank"
+    "alternative": "Side plank on knees",
+    "machine": "Mat",
+    "sources": [
+      "R-core-2"
+    ]
   },
   {
     "id": "farmer",
@@ -1048,8 +1174,12 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Leaning or shrugging."
     ],
-    "alternative": "Suitcase carry (one side)",
-    "posture": true
+    "alternative": "Suitcase carry, one side",
+    "posture": true,
+    "machine": "Heavy dumbbells or kettlebells",
+    "sources": [
+      "R-core-1"
+    ]
   },
   {
     "id": "cat_cow",
@@ -1108,8 +1238,8 @@ export const EXERCISES: Exercise[] = [
   },
   {
     "id": "wall_slide",
-    "name": "Wall slide",
-    "fr": "Glissements au mur",
+    "name": "Wall angel",
+    "fr": "Anges au mur",
     "group": "Mobility",
     "muscles": "Lower traps, serratus, shoulder mobility",
     "equipment": "A wall",
@@ -1354,15 +1484,21 @@ export const EXERCISES: Exercise[] = [
     ],
     "secondary": [],
     "how": [
-      "Lie on your back, strap around one foot.",
-      "Keep the knee straight and pull the leg up until you feel a stretch behind the thigh.",
-      "Other leg stays flat on the floor."
+      "Lie on your back, strap around one foot, other leg flat on the floor.",
+      "Keep the knee straight and pull the leg up until you feel a strong stretch behind the thigh. Hold 30 s.",
+      "Contract-relax, 3 rounds: push the heel into the strap at about half effort for 5 s, breathe out, relax and pull a little deeper, hold 25 s.",
+      "Switch legs."
     ],
     "cues": [
-      "Relax and breathe; let it sink slowly."
+      "Strong stretch but calm breathing, about 6 out of 10.",
+      "Go deeper on the out-breath."
     ],
     "avoid": [
-      "Bending the knee a lot."
+      "Bending the knee to fake range.",
+      "Tingling or an electric feeling down the leg: back off at once."
+    ],
+    "sources": [
+      "R-str-2"
     ]
   },
   {
@@ -1447,10 +1583,75 @@ export const EXERCISES: Exercise[] = [
     "avoid": [
       "Pulling hard."
     ]
-  }
-];
-
-export const EXERCISE_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e,
+  },
+  {
+    "id": "sl_rdl_bw",
+    "name": "Single-leg Romanian deadlift (bodyweight)",
+    "fr": "Soulevé de terre roumain sur une jambe (poids du corps)",
+    "group": "Mobility",
+    "muscles": "Hamstrings, glutes, balance",
+    "equipment": "None (hold a rack for balance at first)",
+    "loadType": "none",
+    "tags": [
+      "bodyweight"
+    ],
+    "where": "both",
+    "primary": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondary": [
+      "lowerBack"
+    ],
+    "how": [
+      "Stand on one leg, knee soft.",
+      "Hinge forward at the hip, 3 s down, as the free leg rises straight behind you, back flat.",
+      "Stop when you feel the hamstring stretch, then stand back up by squeezing the glute."
+    ],
+    "cues": [
+      "Body and back leg move as one straight plank.",
+      "Hips stay square to the floor."
+    ],
+    "avoid": [
+      "Rounding the back to reach lower.",
+      "Opening the hip of the lifted leg."
+    ],
+    "sources": [
+      "R-str-8"
+    ]
+  },
+  {
+    "id": "bird_dog",
+    "name": "Bird-dog",
+    "fr": "Bird-dog (chien d'arrêt)",
+    "group": "Core",
+    "muscles": "Deep abs, back muscles, glutes",
+    "equipment": "Mat",
+    "loadType": "none",
+    "tags": [
+      "mat"
+    ],
+    "where": "both",
+    "primary": [
+      "lowerBack",
+      "abs"
+    ],
+    "secondary": [
+      "glutes"
+    ],
+    "how": [
+      "On hands and knees, hands under shoulders, knees under hips.",
+      "Slowly reach one arm forward and the OPPOSITE leg back until both are level with your body.",
+      "Hold 2 s, come back, switch sides."
+    ],
+    "cues": [
+      "Imagine a glass of water on your lower back: don't spill it.",
+      "Reach long rather than high."
+    ],
+    "avoid": [
+      "Hips rotating or the lower back arching."
+    ]
+  },
   {
     "id": "march",
     "name": "Brisk march or jumping jacks",
@@ -1458,20 +1659,24 @@ export const EXERCISE_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERC
     "group": "Mobility",
     "muscles": "Whole body warm-up",
     "equipment": "None",
-    "loadType": "none", "tags": ["bodyweight"], "where": "both", "primary": ["quads", "calves"], "secondary": [],
-    "how": ["March on the spot with high knees, or do easy jumping jacks.", "Just enough to feel warm; a warm muscle stretches better."],
-    "cues": ["Easy pace, not a workout."], "avoid": []
-  },
-  {
-    "id": "elephant_walk",
-    "name": "Elephant walks",
-    "fr": "Marche de l'éléphant (ischio-jambiers)",
-    "group": "Stretch",
-    "muscles": "Hamstrings, calves",
-    "equipment": "None",
-    "loadType": "none", "tags": ["bodyweight"], "where": "both", "primary": ["hamstrings"], "secondary": ["calves"],
-    "how": ["Stand and fold forward, fingertips toward the floor, both knees bent.", "Straighten one knee while the other stays bent, then swap, like walking on the spot.", "Keep your hips high the whole time."],
-    "cues": ["Hips stay high, the head hangs relaxed."], "avoid": ["Locking both knees and bouncing."]
+    "loadType": "none",
+    "tags": [
+      "bodyweight"
+    ],
+    "where": "both",
+    "primary": [
+      "quads",
+      "calves"
+    ],
+    "secondary": [],
+    "how": [
+      "March on the spot with high knees, or do easy jumping jacks.",
+      "Just enough to feel warm; a warm muscle stretches better."
+    ],
+    "cues": [
+      "Easy pace, not a workout."
+    ],
+    "avoid": []
   },
   {
     "id": "seated_pike",
@@ -1480,9 +1685,34 @@ export const EXERCISE_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERC
     "group": "Stretch",
     "muscles": "Hamstrings, calves, lower back",
     "equipment": "Towel or strap around both feet",
-    "loadType": "none", "tags": ["strap", "mat"], "where": "both", "primary": ["hamstrings"], "secondary": ["calves", "lowerBack"],
-    "how": ["Sit with legs straight together, towel looped around both feet.", "Keep your back flat and pull your chest forward by bending at the hips.", "On the last round only, let go and relax fully into the fold."],
-    "cues": ["Chest toward the knees, not the head toward the knees.", "Knees straight, toes pointing up."], "avoid": ["Rounding the back to fake depth."]
+    "loadType": "none",
+    "tags": [
+      "strap",
+      "mat"
+    ],
+    "where": "both",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [
+      "calves",
+      "lowerBack"
+    ],
+    "how": [
+      "Sit with legs straight together, towel looped around both feet.",
+      "Keep your back flat and pull your chest forward by bending at the hips.",
+      "On the last round only, let go and relax fully into the fold."
+    ],
+    "cues": [
+      "Chest toward the knees, not the head toward the knees.",
+      "Knees straight, toes pointing up."
+    ],
+    "avoid": [
+      "Rounding the back to fake depth."
+    ],
+    "sources": [
+      "R-str-1"
+    ]
   },
   {
     "id": "pancake",
@@ -1491,30 +1721,31 @@ export const EXERCISE_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERC
     "group": "Stretch",
     "muscles": "Inner thighs, hamstrings",
     "equipment": "Mat",
-    "loadType": "none", "tags": ["mat"], "where": "both", "primary": ["adductors", "hamstrings"], "secondary": [],
-    "how": ["Sit with legs wide apart, knees pointing up.", "Tilt your pelvis forward and lean your chest forward, back flat.", "Lean to the centre, then over the right leg, then over the left leg."],
-    "cues": ["Chest proud, move from the hips."], "avoid": ["Knees rolling inward."]
-  },
-  {
-    "id": "butterfly",
-    "name": "Butterfly stretch",
-    "fr": "Papillon (adducteurs)",
-    "group": "Stretch",
-    "muscles": "Inner thighs, hips",
-    "equipment": "Mat",
-    "loadType": "none", "tags": ["mat"], "where": "both", "primary": ["adductors"], "secondary": ["glutes"],
-    "how": ["Sit with the soles of your feet together, heels close to you.", "Sit tall, then gently press your knees toward the floor and lean forward from the hips."],
-    "cues": ["Long spine."], "avoid": ["Bouncing the knees hard."]
-  },
-  {
-    "id": "dog_pedal",
-    "name": "Down-dog calf pedal",
-    "fr": "Chien tête en bas, pédalage des mollets",
-    "group": "Stretch",
-    "muscles": "Calves, hamstrings, shoulders",
-    "equipment": "Mat",
-    "loadType": "none", "tags": ["mat"], "where": "both", "primary": ["calves"], "secondary": ["hamstrings"],
-    "how": ["Start on hands and feet with hips high, body in an upside-down V.", "Press one heel toward the floor, then the other, slowly, like pedalling."],
-    "cues": ["Push the floor away with your hands."], "avoid": ["Rounding the back to reach the heels down."]
+    "loadType": "none",
+    "tags": [
+      "mat"
+    ],
+    "where": "both",
+    "primary": [
+      "adductors",
+      "hamstrings"
+    ],
+    "secondary": [],
+    "how": [
+      "Sit with legs wide apart, knees pointing up.",
+      "Tilt your pelvis forward and lean your chest forward, back flat.",
+      "Lean to the centre, then over the right leg, then over the left leg."
+    ],
+    "cues": [
+      "Chest proud, move from the hips."
+    ],
+    "avoid": [
+      "Knees rolling inward."
+    ],
+    "sources": [
+      "R-str-1"
+    ]
   }
-]));
+];
+
+export const EXERCISE_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));

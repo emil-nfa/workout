@@ -36,6 +36,9 @@ export interface Exercise {
   how: string[];
   cues: string[];
   avoid: string[];
+  /** The likely machine at Fitness Park Lille "Le 31" (exact models not confirmed: research/PROGRAM.md §2). */
+  machine?: string;
+  /** Backup when the machine is taken or broken. */
   alternative?: string;
   progression?: string;
   posture?: boolean;
