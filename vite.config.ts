@@ -7,6 +7,7 @@ const base = process.env.BASE ?? "/workout/";
 
 export default defineConfig({
   base,
+  build: { rollupOptions: { input: { main: "index.html", bakeoff: "bakeoff.html" } } },
   plugins: [
     react(),
     VitePWA({
