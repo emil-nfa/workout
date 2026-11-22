@@ -1,7 +1,8 @@
 // Small hand-built SVG charts for the Journal (notebook mode). Rules from the dataviz guidance:
 // one series = one accent colour and no legend; 2 px line, 8 px markers with a surface ring; recessive grid;
 // hover/tap readout with a crosshair; a table view for every chart; text in ink tokens, never the series colour.
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Point } from "../logic/stats";
 
 const W = 340, H = 170, L = 40, R = 14, T = 14, B = 26;
@@ -95,26 +96,69 @@ export function TargetBars({ rows }: { rows: { label: string; value: number; tar
 }
 
 /** Last N weeks as a Monday-first grid, shaded by ink darkness: stretch, workout, both. */
-export function ActivityCalendar({ days, weeks = 12 }: { days: Map<string, number>; weeks?: number }) {
-  const today = new Date();
-  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7) - (weeks - 1) * 7);
-  const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const shade = (v: number) => (v === 3 ? "var(--ink)" : v === 2 ? "color-mix(in srgb, var(--ink) 62%, var(--bg))" : v === 1 ? "color-mix(in srgb, var(--ink) 28%, var(--bg))" : "var(--surface2)");
-  const cells: JSX.Element[] = [];
-  for (let w = 0; w < weeks; w++)
-    for (let d = 0; d < 7; d++) {
-      const day = new Date(start); day.setDate(start.getDate() + w * 7 + d);
-      if (day > today) continue;
-      const v = days.get(key(day)) ?? 0;
-      const what = ["Nothing", "Stretch", "Workout", "Workout and stretch"][v];
-      cells.push(<rect key={`${w}-${d}`} x={w * 14} y={d * 14} width={12} height={12} rx={2} fill={shade(v)}><title>{`${day.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}: ${what}`}</title></rect>);
-    }
+const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const SHADE = (v: number) => (v === 3 ? "var(--ink)" : v === 2 ? "color-mix(in srgb, var(--ink) 62%, var(--bg))" : v === 1 ? "color-mix(in srgb, var(--ink) 28%, var(--bg))" : "var(--surface)");
+
+/**
+ * One month at a time: the 1st sits top-left and the days run on in rows of seven.
+ * Swipe left / right (or use the arrows) to change month. Never goes past the current month.
+ */
+export function MonthCalendar({ days }: { days: Map<string, number> }) {
+  const now = new Date();
+  const thisMonth = now.getFullYear() * 12 + now.getMonth();
+  const firstData = [...days.keys()].sort()[0];
+  const minMonth = firstData ? Math.min(thisMonth, +firstData.slice(0, 4) * 12 + +firstData.slice(5, 7) - 1) : thisMonth;
+  const [m, setM] = useState(thisMonth);
+  const [anim, setAnim] = useState<"" | "from-left" | "from-right">("");
+  const go = (d: number) => {
+    const n = m + d;
+    if (n > thisMonth || n < minMonth) return;
+    setAnim(d > 0 ? "from-right" : "from-left");
+    setM(n);
+  };
+  const touch = useRef<{ x: number; y: number } | null>(null);
+
+  const year = Math.floor(m / 12), month = m % 12;
+  const count = new Date(year, month + 1, 0).getDate();
+  const todayKey = dayKey(now);
+  const title = new Date(year, month, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  let active = 0;
+  const cells = Array.from({ length: count }, (_, i) => {
+    const d = new Date(year, month, i + 1);
+    const k = dayKey(d);
+    const v = days.get(k) ?? 0;
+    if (v) active++;
+    const future = d > now && k !== todayKey;
+    const what = ["Nothing", "Stretch", "Workout", "Workout and stretch"][v];
+    return (
+      <div key={k} className={`cal-day${k === todayKey ? " today" : ""}${future ? " future" : ""}`}
+        style={{ background: future ? "transparent" : SHADE(v), color: v >= 2 ? "var(--bg)" : undefined }}
+        aria-label={`${d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}: ${future ? "not yet" : what}`} role="gridcell">
+        <span className="num">{i + 1}</span>
+      </div>
+    );
+  });
+
   return (
-    <figure style={{ margin: 0 }}>
-      <svg viewBox={`0 0 ${weeks * 14} 98`} width="100%" style={{ maxWidth: 420 }} role="img" aria-label={`Last ${weeks} weeks of workouts and stretching`}>{cells}</svg>
-      <figcaption className="muted" style={{ display: "flex", gap: 12, fontSize: "0.8rem", marginTop: 6, flexWrap: "wrap" }}>
-        {[1, 2, 3].map((v) => <span key={v} style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: shade(v), display: "inline-block" }} />{["", "Stretch", "Workout", "Both"][v]}</span>)}
+    <figure className="cal" style={{ margin: 0 }}
+      onTouchStart={(e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+      onTouchEnd={(e) => {
+        const t = touch.current; touch.current = null;
+        if (!t) return;
+        const dx = e.changedTouches[0].clientX - t.x, dy = e.changedTouches[0].clientY - t.y;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+      }}>
+      <div className="cal-head">
+        <button className="cal-arrow" onClick={() => go(-1)} disabled={m <= minMonth} aria-label="Previous month"><ChevronLeft size={22} aria-hidden /></button>
+        <div className="cal-title" aria-live="polite">
+          <b>{title}</b>
+          <span className="muted num">{active} {active === 1 ? "active day" : "active days"}</span>
+        </div>
+        <button className="cal-arrow" onClick={() => go(1)} disabled={m >= thisMonth} aria-label="Next month"><ChevronRight size={22} aria-hidden /></button>
+      </div>
+      <div key={m} className={`cal-grid ${anim}`} role="grid" aria-label={title}>{cells}</div>
+      <figcaption className="muted" style={{ display: "flex", gap: 12, fontSize: "0.8rem", marginTop: 10, flexWrap: "wrap" }}>
+        {[1, 2, 3].map((v) => <span key={v} style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><span style={{ width: 10, height: 10, borderRadius: 3, background: SHADE(v), display: "inline-block" }} />{["", "Stretch", "Workout", "Both"][v]}</span>)}
       </figcaption>
     </figure>
   );

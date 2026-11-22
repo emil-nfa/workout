@@ -45,9 +45,10 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   const sheetOpen = !!menu || !!pad;
   useEffect(() => {
     if (!sheetOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    const el = document.getElementById("player");
+    if (!el) return;
+    el.style.overflowY = "hidden";
+    return () => { el.style.overflowY = ""; };
   }, [sheetOpen]);
 
   // Fold the warm-up away (animated) once the first set is logged.
@@ -139,9 +140,10 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       window.setTimeout(() => {
         const card = document.getElementById(`card-${nextRow.slot}`);
         const head = document.querySelector<HTMLElement>(".wk-head");
-        if (!card) return;
-        const y = card.getBoundingClientRect().top + window.scrollY - (head?.getBoundingClientRect().height ?? 0) - 8;
-        window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
+        const box = document.getElementById("player");
+        if (!card || !box) return;
+        const y = card.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - (head?.getBoundingClientRect().height ?? 0) - 8;
+        box.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
       }, reduce ? 0 : 340);
     }
   }

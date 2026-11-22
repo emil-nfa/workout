@@ -30,15 +30,12 @@ export function Player() {
     return () => { void keepAwake(false); };
   }, [settings.wakeLock]);
 
-  // The whole page (incl. overscroll and the iOS status bar area) turns gym-dark while the player is open.
+  // The status bar colour follows the player; the page underneath keeps its own colours (no dark flash).
   useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.mode = "gym";
     const metas = [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')];
     const old = metas.map((m) => m.content);
     metas.forEach((m) => (m.content = "#0E0E0E"));
     return () => {
-      delete root.dataset.mode;
       metas.forEach((m, i) => (m.content = old[i]));
     };
   }, []);

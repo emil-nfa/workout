@@ -52,22 +52,22 @@ export default function App() {
   const hasMini = !player.open && (!!active || player.kind === "stretch");
   const screen = { today: Today, journal: Journal, library: Library, me: Me }[tab];
   const Screen = screen;
+  // While the player covers the tabs, they can't be reached (taps, VoiceOver, keyboard).
+  const behind = player.open ? ({ inert: "", "aria-hidden": true } as Record<string, unknown>) : {};
 
   return (
     <AppContext.Provider value={{ settings, tab, setTab, player, setPlayer, activeSession: active ?? null }}>
       {!settings.onboarded ? (
         <Onboarding />
-      ) : player.open ? (
-        <div className={`player-layer ${closing ? "out" : "in"}`}><Player /></div>
       ) : (
         <>
-          <div className="scroller" id="main">
+          <div className="scroller" id="main" {...behind}>
             <main className={`screen${hasMini ? " with-mini" : ""}`}>
               <Screen />
             </main>
           </div>
-          {hasMini && <MiniPlayer />}
-          <nav className="tabbar" aria-label="Main">
+          {hasMini && !closing && <MiniPlayer />}
+          <nav className="tabbar" aria-label="Main" {...behind}>
             <span className="glide" aria-hidden style={{ transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />
             {TABS.map(({ id, label, Icon }) => (
               <button key={id} aria-current={tab === id ? "page" : undefined} onClick={() => { setTab(id); scrollTop(); }}>
@@ -76,6 +76,10 @@ export default function App() {
               </button>
             ))}
           </nav>
+          {/* The player slides up over the tabs (they stay mounted underneath, so there is never a blank frame). */}
+          {player.open && (
+            <div id="player" data-mode="gym" className={`player-layer ${closing ? "out" : "in"}`}><Player /></div>
+          )}
         </>
       )}
     </AppContext.Provider>

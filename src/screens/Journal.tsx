@@ -5,7 +5,7 @@ import { EXERCISE_BY_ID } from "../data/exercises";
 import type { Muscle } from "../data/types";
 import { fmtClock, localDate } from "../logic/rotation";
 import { WEEKLY_TARGET, activityByDay, e1rmSeries, personalBests, weekStart, weeklySets } from "../logic/stats";
-import { ActivityCalendar, LineChart, TargetBars } from "../components/Charts";
+import { MonthCalendar, LineChart, TargetBars } from "../components/Charts";
 import { scrollTop } from "../lib/scroll";
 
 const MUSCLE_LABEL: Partial<Record<Muscle, string>> = {
@@ -44,7 +44,7 @@ function History({ sessions, sets, stretches, onOpen }: { sessions: WorkoutSessi
   ].sort((a, b) => b.at.localeCompare(a.at));
   return (
     <>
-      <ActivityCalendar days={activityByDay(sessions, stretches)} />
+      <MonthCalendar days={activityByDay(sessions, stretches)} />
       <h2>Sessions</h2>
       {!items.length && <p className="lede">Nothing yet. Finished workouts and stretch sessions show up here.</p>}
       <ul className="ruled" style={{ listStyle: "none", padding: 0, margin: 0 }}>

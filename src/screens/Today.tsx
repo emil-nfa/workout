@@ -61,6 +61,16 @@ export function Today() {
 
       {mode === "workout" ? (
         <section aria-labelledby="next-h">
+          {/* Session picker first, so it stays in place while the list below changes. */}
+          {!activeSession && (
+            <div className="seg picker" role="group" aria-label="Pick a session" style={{ marginBottom: "var(--s4)" }}>
+              {program.sessions.map((s) => (
+                <button key={s.key} aria-pressed={s.key === key} aria-label={`Session ${s.key}, ${s.title}`} onClick={() => setPick(s.key === next ? null : s.key)}>
+                  <span className="num">{s.key}</span>
+                </button>
+              ))}
+            </div>
+          )}
           {activeSession ? (
             <>
               <p className="caps muted">In progress</p>
@@ -69,7 +79,7 @@ export function Today() {
             </>
           ) : (
             <>
-              <p className="caps muted">{key === next ? "Next in rotation" : "Picked instead"}</p>
+              <p className="caps muted">{key === next ? "Next in rotation" : `Picked instead of ${next}`}</p>
               <h1 id="next-h"><span className="num">{key}</span> · {session.title}</h1>
               <p className="lede">{session.slots.length} exercises · about <span className="num">{minutes}</span> min · {session.subtitle}</p>
               {settings.experience !== "regular" && finished.length < RAMP_IN_SESSIONS && (
@@ -100,17 +110,7 @@ export function Today() {
           </ol>
 
           {!activeSession && (
-            <>
-              <h2>Train something else</h2>
-              <div className="seg" role="group" aria-label="Pick a session">
-                {program.sessions.map((s) => (
-                  <button key={s.key} aria-pressed={s.key === key} aria-label={`Session ${s.key}, ${s.title}`} onClick={() => setPick(s.key === next ? null : s.key)}>
-                    <span className="num">{s.key}</span>
-                  </button>
-                ))}
-              </div>
-              <p className="muted" style={{ fontSize: "0.9rem" }}>Not training today? Do the next letter whenever you go back. Never skip a letter.</p>
-            </>
+            <p className="muted" style={{ fontSize: "0.9rem" }}>Not training today? Do the next letter whenever you go back. Never skip a letter.</p>
           )}
         </section>
       ) : (
