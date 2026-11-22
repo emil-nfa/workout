@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db } from "../db/db";
 import { beep } from "../lib/platform";
 import { fmtClock } from "../logic/rotation";
@@ -23,6 +23,14 @@ export function RestBar({ rest }: { rest: RestState }) {
   const left = Math.min(rest.totalSec, Math.ceil((rest.endsAt - now) / 1000));
   const over = left <= 0;
   const beeped = useRef<number | null>(null);
+  // Skip / Close / auto-hide: slide the bar down, then remove it.
+  const [leaving, setLeaving] = useState(false);
+  const dismiss = () => {
+    if (leaving) return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setLeaving(true);
+    window.setTimeout(() => { void db.meta.delete("rest"); setLeaving(false); }, reduce ? 0 : 260);
+  };
 
   useEffect(() => {
     if (over && beeped.current !== rest.endsAt) {
@@ -34,7 +42,7 @@ export function RestBar({ rest }: { rest: RestState }) {
 
   // Hide the bar 20 s after the rest ended.
   useEffect(() => {
-    if (over && now - rest.endsAt > 20_000) void db.meta.delete("rest");
+    if (over && now - rest.endsAt > 20_000) dismiss();
   }, [over, now, rest.endsAt]);
 
   const adjust = (d: number) => db.meta.put({ key: "rest", value: { ...rest, endsAt: rest.endsAt + d * 1000, totalSec: Math.max(0, rest.totalSec + d) } });
@@ -45,7 +53,7 @@ export function RestBar({ rest }: { rest: RestState }) {
   };
 
   return (
-    <div className={`rest${over ? " over" : ""}`} role="timer" aria-live="off" aria-label={over ? "Rest over" : `Rest, ${fmtClock(left)} left`}>
+    <div key={rest.endsAt - rest.totalSec * 1000} className={`rest${over ? " over" : ""}${leaving ? " leaving" : ""}`} role="timer" aria-live="off" aria-label={over ? "Rest over" : `Rest, ${fmtClock(left)} left`}>
       <div className="rest-row">
         <div>
           <div className="big">{over ? "Go" : fmtClock(left)}</div>
@@ -53,7 +61,7 @@ export function RestBar({ rest }: { rest: RestState }) {
         <div className="ctl">
           {!over && <button onClick={() => adjust(-15)} aria-label="15 seconds less">−15</button>}
           {!over && <button onClick={() => adjust(15)} aria-label="15 seconds more">+15</button>}
-          <button className="skip" onClick={() => db.meta.delete("rest")}>{over ? "Close" : "Skip"}</button>
+          <button className="skip" onClick={dismiss}>{over ? "Close" : "Skip"}</button>
         </div>
       </div>
       <div className="next">Next: <b>{rest.nextLabel}</b>{rest.nextValue && <> · <b>{rest.nextValue}</b></>}</div>

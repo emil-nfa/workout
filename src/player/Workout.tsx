@@ -31,7 +31,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   const [pad, setPad] = useState<{ rowId: string; field: PadField; thenTick?: boolean } | null>(null);
   const [warmOpen, setWarmOpen] = useState(true);
   const [menu, setMenu] = useState<{ kind: "exercise"; slot: number } | { kind: "set"; rowId: string } | { kind: "swap"; slot: number } | { kind: "how"; exerciseId: string } | { kind: "session" } | null>(null);
-  const [toast, setToast] = useState<{ text: string; undo?: () => void } | null>(null);
+  const [toast, setToast] = useState<{ text: string; undo?: () => void; leaving?: boolean } | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [finishing, setFinishing] = useState(false);
   const [warmDone, setWarmDone] = useState<Set<number>>(new Set());
@@ -85,7 +85,11 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   function showToast(text: string, undo?: () => void) {
     window.clearTimeout(toastTimer.current);
     setToast({ text, undo });
-    toastTimer.current = window.setTimeout(() => setToast(null), 4000);
+    // Shown 2.5 s, then fades up and away.
+    toastTimer.current = window.setTimeout(() => {
+      setToast((t) => (t ? { ...t, leaving: true } : t));
+      toastTimer.current = window.setTimeout(() => setToast(null), 320);
+    }, 2500);
   }
 
   async function tick(r: LoggedSet) {
@@ -131,7 +135,14 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       setExpanded((e) => { const n = new Set(e); n.delete(r.slot); return n; });
       // Let the card fold first (about 0.3 s), then glide to the next exercise.
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      window.setTimeout(() => document.getElementById(`card-${nextRow.slot}`)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }), reduce ? 0 : 330);
+      // Then bring the next exercise to just under the header (not under it, not half-way down).
+      window.setTimeout(() => {
+        const card = document.getElementById(`card-${nextRow.slot}`);
+        const head = document.querySelector<HTMLElement>(".wk-head");
+        if (!card) return;
+        const y = card.getBoundingClientRect().top + window.scrollY - (head?.getBoundingClientRect().height ?? 0) - 8;
+        window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
+      }, reduce ? 0 : 340);
     }
   }
 
@@ -287,7 +298,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
 
       {rest && <RestBar rest={rest} />}
       {toast && (
-        <div className="toast" role="status">
+        <div className={`toast${toast.leaving ? " leaving" : ""}`} role="status">
           {toast.text}
           {toast.undo && <button onClick={() => { toast.undo!(); setToast(null); }}>Undo</button>}
         </div>
