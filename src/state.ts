@@ -13,7 +13,8 @@ export interface AppState {
   tab: Tab;
   setTab: (t: Tab) => void;
   player: PlayerState;
-  setPlayer: (p: PlayerState) => void;
+  /** `from: "pill"` = opened from the mini-player, so the player grows out of it. */
+  setPlayer: (p: PlayerState, from?: "pill") => void;
   activeSession: WorkoutSession | null;
 }
 

@@ -21,8 +21,8 @@ describe("planning a session", () => {
     const { d, s } = await setup();
     await Promise.all([materialize(s, A, d), materialize(s, A, d)]);
     const rows = await rowsOf(d, s.id);
-    // ramp-in (no finished sessions yet): every slot capped at 2 sets
-    expect(rows.length).toBe(A.slots.length * 2);
+    // full program from the first session (no learning phase)
+    expect(rows.length).toBe(A.slots.reduce((n, sl) => n + sl.sets, 0));
     expect(rows.every((r) => !r.done)).toBe(true);
   });
 
@@ -33,8 +33,8 @@ describe("planning a session", () => {
     await d.sets.bulkPut([0, 1].map((o) => ({ id: newId(), sessionId: "old", exerciseId: "row_chest", slot: 0, order: o, type: "working" as const, weight: 40, reps: 12, done: true })));
     await materialize(s, A, d);
     const row = (await rowsOf(d, s.id)).filter((r) => r.slot === 0);
-    expect(row.map((r) => r.weight)).toEqual([42.5, 42.5]);
-    expect(row.map((r) => r.reps)).toEqual([8, 8]);
+    expect(row.map((r) => r.weight)).toEqual([42.5, 42.5, 42.5]);
+    expect(row.map((r) => r.reps)).toEqual([8, 8, 8]);
   });
 });
 

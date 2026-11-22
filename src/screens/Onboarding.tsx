@@ -11,13 +11,12 @@ export function Onboarding() {
   const { settings } = useApp();
   const [step, setStep] = useState(isStandalone() ? 1 : 0);
   const [bw, setBw] = useState(settings.bodyweightKg ? String(settings.bodyweightKg) : "");
-  const [exp, setExp] = useState(settings.experience);
   const [days, setDays] = useState<number[]>(settings.trainingDays);
   const [injuries, setInjuries] = useState(settings.injuries ?? "");
 
   const finish = async () => {
     const kg = Number(bw.replace(",", "."));
-    await updateSettings({ bodyweightKg: kg > 30 && kg < 250 ? kg : undefined, experience: exp, trainingDays: days, injuries: injuries.trim() || undefined, onboarded: true });
+    await updateSettings({ bodyweightKg: kg > 30 && kg < 250 ? kg : undefined, experience: "regular", trainingDays: days, injuries: injuries.trim() || undefined, onboarded: true });
     if (kg > 30 && kg < 250) await db.bodyweight.put({ id: `bw-${new Date().toISOString().slice(0, 10)}`, date: new Date().toISOString().slice(0, 10), kg });
   };
 
@@ -50,12 +49,6 @@ export function Onboarding() {
         <h1>About you</h1>
         <div className="stack">
           <div className="field"><label htmlFor="bw">Body weight, kg (optional)</label><input id="bw" inputMode="decimal" value={bw} onChange={(e) => setBw(e.target.value)} placeholder="Used for protein and progress only" /></div>
-          <div className="field"><span>Lifting experience</span>
-            <div className="seg" role="group" aria-label="Experience">
-              {([["new", "New"], ["some", "A bit"], ["regular", "Regular"]] as const).map(([v, l]) => <button key={v} aria-pressed={exp === v} onClick={() => setExp(v)}>{l}</button>)}
-            </div>
-            <span className="muted" style={{ fontSize: "0.85rem" }}>New or a bit: your first 8 sessions are lighter (2 sets, about 3 reps left) while you learn the movements.</span>
-          </div>
           <div className="field"><label htmlFor="inj">Any pain or injury? (optional)</label><input id="inj" value={injuries} onChange={(e) => setInjuries(e.target.value)} placeholder="e.g. none" /></div>
         </div>
       </>,

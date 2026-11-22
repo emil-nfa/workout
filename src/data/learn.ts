@@ -17,7 +17,7 @@ export const LEARN: LearnCard[] = [
     id: "volume", title: "How many sets", evidence: "strong",
     body: [
       "More hard sets per muscle per week give more growth, but each extra set adds less than the one before. Around 10 to 12 hard sets per muscle per week gets most of the benefit for a beginner.",
-      "You start with 2 sets of everything for two weeks while you learn the movements, then move to the full program.",
+      "The program gives most exercises 3 hard sets, so each muscle gets about 10 to 12 hard sets across the week.",
     ],
     sources: ["R-vol-1", "R-vol-2", "R-beg-1"],
   },

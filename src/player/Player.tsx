@@ -53,7 +53,7 @@ export function Player() {
   return <Workout key={s.id} session={s} ps={session} />;
 }
 
-export function MiniPlayer() {
+export function MiniPlayer({ inert }: { inert?: boolean }) {
   const { player, setPlayer, activeSession } = useApp();
   const now = useNow();
   const rest = useLiveQuery(() => db.meta.get("rest"))?.value as RestState | undefined;
@@ -62,7 +62,7 @@ export function MiniPlayer() {
   const label = player.kind === "stretch" ? "Stretch in progress" : `Workout ${activeSession?.key} in progress`;
   const restLeft = rest && player.kind !== "stretch" ? Math.ceil((rest.endsAt - now) / 1000) : null;
   return (
-    <button data-mode="gym" className="mini" onClick={() => setPlayer({ ...player, kind: player.kind ?? "workout", open: true } as typeof player)}>
+    <button data-mode="gym" className="mini" {...(inert ? { inert: "", "aria-hidden": true } : {})} onClick={() => setPlayer({ ...player, kind: player.kind ?? "workout", open: true } as typeof player, "pill")}>
       <span style={{ width: 10, height: 10, borderRadius: 999, background: "var(--accent)", flex: "none", marginLeft: 6 }} aria-hidden />
       <span style={{ flex: 1, fontWeight: 600 }}>{label}</span>
       {restLeft !== null && restLeft > 0 ? (

@@ -101,7 +101,7 @@ const SHADE = (v: number) => (v === 3 ? "var(--ink)" : v === 2 ? "color-mix(in s
 
 /**
  * One month at a time: the 1st sits top-left and the days run on in rows of seven.
- * Swipe left / right (or use the arrows) to change month. Never goes past the current month.
+ * Swipe left / right (or use the arrows) to change month: back to the first logged month, and one month ahead.
  */
 export function MonthCalendar({ days }: { days: Map<string, number> }) {
   const now = new Date();
@@ -112,7 +112,7 @@ export function MonthCalendar({ days }: { days: Map<string, number> }) {
   const [anim, setAnim] = useState<"" | "from-left" | "from-right">("");
   const go = (d: number) => {
     const n = m + d;
-    if (n > thisMonth || n < minMonth) return;
+    if (n > thisMonth + 1 || n < minMonth) return;
     setAnim(d > 0 ? "from-right" : "from-left");
     setM(n);
   };
@@ -154,7 +154,7 @@ export function MonthCalendar({ days }: { days: Map<string, number> }) {
           <b>{title}</b>
           <span className="muted num">{active} {active === 1 ? "active day" : "active days"}</span>
         </div>
-        <button className="cal-arrow" onClick={() => go(1)} disabled={m >= thisMonth} aria-label="Next month"><ChevronRight size={22} aria-hidden /></button>
+        <button className="cal-arrow" onClick={() => go(1)} disabled={m >= thisMonth + 1} aria-label="Next month"><ChevronRight size={22} aria-hidden /></button>
       </div>
       <div key={m} className={`cal-grid ${anim}`} role="grid" aria-label={title}>{cells}</div>
       <figcaption className="muted" style={{ display: "flex", gap: 12, fontSize: "0.8rem", marginTop: 10, flexWrap: "wrap" }}>

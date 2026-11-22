@@ -3,7 +3,7 @@
 import { db, newId, type LoggedSet, type WorkoutDB, type WorkoutSession } from "../db/db";
 import { EXERCISE_BY_ID } from "../data/exercises";
 import type { ProgramSession, Slot } from "../data/types";
-import { DEFAULT_INCREMENT, RAMP_IN_SESSIONS, e1rm, suggest, type Exposure, type Suggestion } from "./progression";
+import { DEFAULT_INCREMENT, e1rm, suggest, type Exposure, type Suggestion } from "./progression";
 
 /** Past exposures of an exercise (finished sessions only, working sets that were done), newest first. */
 export async function exposuresFor(exerciseId: string, excludeSessionId?: string, d: WorkoutDB = db): Promise<Exposure[]> {
@@ -35,13 +35,11 @@ export async function suggestionFor(session: WorkoutSession, slot: Slot, exercis
   const ex = EXERCISE_BY_ID[exerciseId];
   const loadType = ex?.loadType ?? "stack";
   const pref = await d.exercisePrefs.get(exerciseId);
-  // Ramp-in (fewer sets, ~3 reps left) for the first sessions, unless the user already lifts regularly.
-  const experience = (await d.settings.get("me"))?.experience;
-  const rampIn = experience !== "regular" && (await finishedCount(d)) < RAMP_IN_SESSIONS;
+  // Full program from the first session (no learning phase: the user is not a beginner).
   return suggest(
     { sets: slot.sets, repMin: slot.repMin, repMax: slot.repMax, loadType },
     await exposuresFor(exerciseId, session.id, d),
-    { rampIn, deload: session.deload },
+    { deload: session.deload },
     pref?.incrementKg ?? DEFAULT_INCREMENT[loadType],
   );
 }

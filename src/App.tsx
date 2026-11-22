@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { BookOpen, CalendarDays, Dumbbell, User } from "lucide-react";
 import { db } from "./db/db";
-import { ensureSeeded } from "./db/settings";
+import { dropLearningPhase, ensureSeeded } from "./db/settings";
 import { isStandalone, requestPersist } from "./lib/platform";
 import { Today } from "./screens/Today";
 import { Journal } from "./screens/Journal";
@@ -10,6 +10,7 @@ import { Library } from "./screens/Library";
 import { Me } from "./screens/Me";
 import { Onboarding } from "./screens/Onboarding";
 import { Player, MiniPlayer } from "./player/Player";
+import { animateClose, animateOpen, useDragToClose } from "./player/layerMotion";
 import { AppContext, type PlayerState, type Tab } from "./state";
 import { scrollTop } from "./lib/scroll";
 
@@ -24,20 +25,37 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<Tab>("today");
   const [player, setPlayerRaw] = useState<PlayerState>({ open: false });
-  // The player slides up when it opens and back down when it closes or is minimised.
+  // Player motion (src/player/layerMotion.ts): up from the bottom on Start, out of the pill from the
+  // mini-player, back into the pill on minimise (chevron or swipe down).
+  const layerRef = useRef<HTMLDivElement>(null);
+  const openFrom = useRef<"bottom" | "pill">("bottom");
   const [closing, setClosing] = useState(false);
-  const setPlayer = (p: PlayerState) => {
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (player.open && !p.open && !reduce) {
-      setClosing(true);
-      window.setTimeout(() => { setClosing(false); setPlayerRaw(p); }, 260);
-    } else setPlayerRaw(p);
+  const closingRef = useRef(false);
+  const playerRef = useRef(player);
+  playerRef.current = player;
+  const close = (p: PlayerState, dy = 0) => {
+    if (closingRef.current) return;
+    const el = layerRef.current;
+    if (!el) return setPlayerRaw(p);
+    closingRef.current = true;
+    setClosing(true);
+    void animateClose(el, dy).then(() => { closingRef.current = false; setClosing(false); setPlayerRaw(p); });
   };
+  const setPlayer = (p: PlayerState, from?: "pill") => {
+    const cur = playerRef.current;
+    if (cur.open && !p.open) return close(p);
+    if (!cur.open && p.open) openFrom.current = from ?? "bottom";
+    setPlayerRaw(p);
+  };
+  useLayoutEffect(() => {
+    if (player.open && layerRef.current) animateOpen(layerRef.current, openFrom.current);
+  }, [player.open]);
+  useDragToClose(layerRef, player.open && !closing, (dy) => close({ ...playerRef.current, open: false } as PlayerState, dy));
   const settings = useLiveQuery(() => db.settings.get("me"));
   const active = useLiveQuery(() => db.sessions.where("status").equals("active").first());
 
   useEffect(() => {
-    ensureSeeded().then(() => setReady(true));
+    ensureSeeded().then(() => dropLearningPhase()).then(() => setReady(true));
     if (isStandalone()) {
       void requestPersist().then((state) => db.meta.put({ key: "persist", value: { state, at: new Date().toISOString() } }));
     }
@@ -56,7 +74,8 @@ export default function App() {
 
   if (!ready || !settings) return null;
 
-  const hasMini = !player.open && (!!active || player.kind === "stretch");
+  // The pill stays mounted under the open player, so it can grow out of it and shrink back into it.
+  const hasMini = !!active || (player.kind === "stretch" && !!player.startedAt);
   const screen = { today: Today, journal: Journal, library: Library, me: Me }[tab];
   const Screen = screen;
   // While the player covers the tabs, they can't be reached (taps, VoiceOver, keyboard).
@@ -73,7 +92,7 @@ export default function App() {
               <Screen />
             </main>
           </div>
-          {hasMini && !closing && <MiniPlayer />}
+          {hasMini && <MiniPlayer inert={player.open} />}
           <nav className="tabbar" aria-label="Main" {...behind}>
             <span className="glide" aria-hidden style={{ transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />
             {TABS.map(({ id, label, Icon }) => (
@@ -85,7 +104,7 @@ export default function App() {
           </nav>
           {/* The player slides up over the tabs (they stay mounted underneath, so there is never a blank frame). */}
           {player.open && (
-            <div id="player" data-mode="gym" className={`player-layer ${closing ? "out" : "in"}`}><Player /></div>
+            <div id="player" ref={layerRef} data-mode="gym" className={`player-layer${closing ? " out" : ""}`}><Player /></div>
           )}
         </>
       )}
