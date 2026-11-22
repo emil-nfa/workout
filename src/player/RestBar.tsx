@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { db } from "../db/db";
 import { beep } from "../lib/platform";
 import { fmtClock } from "../logic/rotation";
+import { useNow } from "./Player";
 
 export interface RestState {
   endsAt: number; // epoch ms: the countdown is computed from this, so it survives the screen locking
@@ -16,7 +17,8 @@ export interface RestState {
  * Compact rest bar in the thumb zone (~120 px), the next set row stays visible above it.
  * −15 / +15 change THIS rest only; "Save as default" stores it for the exercise.
  */
-export function RestBar({ rest, now }: { rest: RestState; now: number }) {
+export function RestBar({ rest }: { rest: RestState }) {
+  const now = useNow(250);
   // Never show more than this rest's length (the shared clock can be up to a second old when the rest starts).
   const left = Math.min(rest.totalSec, Math.ceil((rest.endsAt - now) / 1000));
   const over = left <= 0;

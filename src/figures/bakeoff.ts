@@ -1,8 +1,5 @@
 // The M3 bake-off page (bakeoff.html): both styles side by side, full size and at thumbnail size,
 // on the dark gym ground and the light notebook ground. ?sheet=1 shows frozen frames for review.
-import "@fontsource/barlow/latin-400.css";
-import "@fontsource/barlow/latin-600.css";
-import "@fontsource/barlow-condensed/latin-600.css";
 import "../styles/base.css";
 import { injectTheme } from "../styles/theme";
 import { MOTIONS, BAKEOFF } from "./motions";
@@ -21,7 +18,7 @@ if (params.get("mode") === "light") delete document.documentElement.dataset.mode
 
 const css = `
   body{margin:0} .wrap{max-width:900px;margin:0 auto;padding:16px}
-  h1{font:600 2rem/1.1 var(--font-num);margin:8px 0 4px;text-transform:uppercase}
+  h1{font:700 2rem/1.1 var(--font-serif);margin:8px 0 4px;letter-spacing:-.02em}
   h2{font:600 1.5rem/1.1 var(--font-num);margin:28px 0 2px}
   .fr{color:var(--ink2);font-size:.9rem;margin-bottom:10px}
   .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}

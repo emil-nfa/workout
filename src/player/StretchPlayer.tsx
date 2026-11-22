@@ -71,7 +71,7 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
     return (
       <div className="wk" data-stretch style={{ display: "flex", flexDirection: "column", paddingTop: "calc(var(--safe-t) + var(--s6))", paddingBottom: "calc(var(--safe-b) + var(--s4))" }}>
         <p className="caps muted" style={{ margin: 0 }}>{ended.completed ? "Done" : "Stopped early"}</p>
-        <h1 style={{ font: "700 3rem/1 var(--font-num)", margin: "var(--s2) 0", textTransform: "uppercase" }}>{routine.name} stretch</h1>
+        <h1 style={{ font: "700 2.4rem/1.1 var(--font-serif)", margin: "var(--s2) 0", letterSpacing: "-0.02em" }}>{routine.name} stretch</h1>
         <div className="sumgrid">
           <div><div className="k">Time</div><div className="v">{fmtClock(ended.durationSec)}</div></div>
           <div><div className="k">Moves</div><div className="v">{ended.completed ? new Set(tl.map((x) => x.step)).size : new Set(tl.filter((x) => tl.reduce((m, y, i) => (y.step === x.step ? i : m), -1) < (clock?.seg ?? 0)).map((x) => x.step)).size}</div></div>
@@ -121,7 +121,7 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
         <button aria-label="Skip to the next move" onClick={() => go(1)} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "18%", zIndex: 2, background: "none", border: 0, color: "var(--ink2)", fontWeight: 600, textAlign: "right" }}>Skip ›</button>
 
         <div style={{ width: "62%", margin: "0 auto" }}><ExerciseVideo id={seg.exerciseId} name={ex?.name ?? ""} /></div>
-        <div style={{ font: "700 clamp(2rem, 9vw, 3rem)/1.05 var(--font-num)", textTransform: "uppercase", padding: "0 18%" }}>{ex?.name}</div>
+        <div style={{ font: "700 clamp(1.8rem, 8vw, 2.6rem)/1.1 var(--font-serif)", letterSpacing: "-0.02em", padding: "0 18%" }}>{ex?.name}</div>
         <div className="muted" style={{ fontSize: "1.05rem" }}>{seg.side ? `${seg.side === "right" ? "Right" : "Left"} side · ` : ""}{seg.label}</div>
         <div aria-live="off" style={{ font: "700 clamp(7rem, 38vw, 12rem)/0.9 var(--font-num)", fontVariantNumeric: "tabular-nums", color: phaseColor }}>{big}</div>
         {seg.kind === "reps" && <div className="muted">reps, slow</div>}

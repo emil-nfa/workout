@@ -11,6 +11,7 @@ import { Me } from "./screens/Me";
 import { Onboarding } from "./screens/Onboarding";
 import { Player, MiniPlayer } from "./player/Player";
 import { AppContext, type PlayerState, type Tab } from "./state";
+import { scrollTop } from "./lib/scroll";
 
 const TABS: { id: Tab; label: string; Icon: typeof Dumbbell }[] = [
   { id: "today", label: "Today", Icon: Dumbbell },
@@ -22,7 +23,16 @@ const TABS: { id: Tab; label: string; Icon: typeof Dumbbell }[] = [
 export default function App() {
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<Tab>("today");
-  const [player, setPlayer] = useState<PlayerState>({ open: false });
+  const [player, setPlayerRaw] = useState<PlayerState>({ open: false });
+  // The player slides up when it opens and back down when it closes or is minimised.
+  const [closing, setClosing] = useState(false);
+  const setPlayer = (p: PlayerState) => {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (player.open && !p.open && !reduce) {
+      setClosing(true);
+      window.setTimeout(() => { setClosing(false); setPlayerRaw(p); }, 260);
+    } else setPlayerRaw(p);
+  };
   const settings = useLiveQuery(() => db.settings.get("me"));
   const active = useLiveQuery(() => db.sessions.where("status").equals("active").first());
 
@@ -48,16 +58,19 @@ export default function App() {
       {!settings.onboarded ? (
         <Onboarding />
       ) : player.open ? (
-        <Player />
+        <div className={`player-layer ${closing ? "out" : "in"}`}><Player /></div>
       ) : (
         <>
-          <main className={`screen${hasMini ? " with-mini" : ""}`} id="main">
-            <Screen />
-          </main>
+          <div className="scroller" id="main">
+            <main className={`screen${hasMini ? " with-mini" : ""}`}>
+              <Screen />
+            </main>
+          </div>
           {hasMini && <MiniPlayer />}
           <nav className="tabbar" aria-label="Main">
+            <span className="glide" aria-hidden style={{ transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />
             {TABS.map(({ id, label, Icon }) => (
-              <button key={id} aria-current={tab === id ? "page" : undefined} onClick={() => { setTab(id); scrollTo(0, 0); }}>
+              <button key={id} aria-current={tab === id ? "page" : undefined} onClick={() => { setTab(id); scrollTop(); }}>
                 <Icon size={24} strokeWidth={1.8} aria-hidden />
                 {label}
               </button>

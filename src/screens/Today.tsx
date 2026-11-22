@@ -7,6 +7,7 @@ import { STRETCH_ROUTINES } from "../data/stretches";
 import { buildTimeline, totalSeconds } from "../logic/stretchPlan";
 import { daysSince, estimateMinutes, localDate, nextSessionKey, streak } from "../logic/rotation";
 import { isStandalone, unlockAudio } from "../lib/platform";
+import { RAMP_IN_SESSIONS } from "../logic/progression";
 import type { SessionKey } from "../data/types";
 
 export function Today() {
@@ -71,6 +72,11 @@ export function Today() {
               <p className="caps muted">{key === next ? "Next in rotation" : "Picked instead"}</p>
               <h1 id="next-h"><span className="num">{key}</span> · {session.title}</h1>
               <p className="lede">{session.slots.length} exercises · about <span className="num">{minutes}</span> min · {session.subtitle}</p>
+              {settings.experience !== "regular" && finished.length < RAMP_IN_SESSIONS && (
+                <p className="banner" style={{ display: "block" }}>
+                  <b>Learning phase: session {finished.length + 1} of {RAMP_IN_SESSIONS}.</b> 2 sets of each exercise, stopping about 3 reps before failure, while you learn the movements. The research behind it: Library, Learn, How many sets.
+                </p>
+              )}
               <button className="btn primary big" onClick={start}>Start</button>
               {doneToday && <p className="muted" style={{ marginTop: "var(--s3)" }}>You already trained today. Rest is part of the plan.</p>}
             </>

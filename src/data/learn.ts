@@ -114,27 +114,3 @@ export const LEARN: LearnCard[] = [
     sources: ["R-gym-1", "R-gym-3"],
   },
 ];
-
-export const GLOSSARY: [string, string][] = [
-  ["Rep", "One full movement, down and up."],
-  ["Set", "A group of reps done without stopping."],
-  ["Working set", "A hard set that counts toward progress (not a warm-up)."],
-  ["Warm-up set (W)", "A light set before the working sets, to prepare the joints. Not counted in progress."],
-  ["RIR (reps in reserve)", "How many more good reps you could still have done when you stopped."],
-  ["Failure", "The point where you can't do another rep with good form."],
-  ["Superset", "Two exercises done back to back, resting after the pair."],
-  ["Drop set (D)", "A lighter set done straight after a working set."],
-  ["Double progression", "Add reps until you hit the top of the range on every set, then add weight."],
-  ["Deload", "An easy week with half the sets, to recover."],
-  ["1RM", "One-rep max: the most you could lift once. The app estimates it; never test it."],
-  ["Compound exercise", "Uses several joints at once (row, press, squat)."],
-  ["Isolation exercise", "Uses mainly one joint (curl, lateral raise)."],
-  ["Hinge", "Bending at the hips with a flat back, hips pushing back (RDL, back extension)."],
-  ["Brace", "Tightening your belly and holding your breath briefly to protect your spine on heavy lifts."],
-  ["ROM (range of motion)", "How far a joint moves. Use the full range."],
-  ["Eccentric", "The lowering part of a rep. Do it slowly, in 2 to 3 seconds."],
-  ["PNF stretching", "Contract-relax: push against the stretch for a few seconds, relax, then go a little deeper."],
-  ["Posterior chain", "The back of the body: hamstrings, glutes, back."],
-  ["Plate-loaded", "A machine you load with weight plates, instead of a pin in a stack."],
-  ["Stack", "The column of weights on a machine; you pick the weight with a pin."],
-];

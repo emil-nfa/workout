@@ -14,12 +14,13 @@ export async function logAllSets(page: Page, kg = "20", limit = 80) {
   for (let i = 0; i < limit; i++) {
     const tick = page.locator(".set-r.current .tick");
     if ((await tick.count()) === 0) return;
-    await tick.first().click();
+    // The current row moves as sets are logged: re-check instead of waiting on a row that's gone.
+    if (!(await tick.first().click({ timeout: 2500 }).then(() => true, () => false))) continue;
     const pad = page.getByRole("dialog", { name: /Edit/ });
     if (await pad.isVisible().catch(() => false)) {
       for (const ch of kg) await pad.getByRole("button", { name: ch === "." ? "." : ch, exact: true }).click();
-      await pad.getByRole("button", { name: "Done" }).click();
-      await page.locator(".set-r.current .tick").first().click();
+      await pad.getByRole("button", { name: "Done" }).click(); // Done also logs the set (one step)
+      await pad.waitFor({ state: "detached" });
     }
   }
   if (limit >= 80) throw new Error("logAllSets did not finish");

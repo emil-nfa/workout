@@ -1,15 +1,16 @@
 /* Base styles. Colours come from themes.json (injected as CSS variables by src/styles/theme.ts).
    Shared constants across modes: spacing scale, grid, radius, tick shape, number font. */
 :root {
-  --font-num: "Barlow Condensed", system-ui, sans-serif;
-  --font-ui: "Barlow", system-ui, -apple-system, sans-serif;
-  --font-serif: "Newsreader", Georgia, serif;
+  /* Apple's system font (SF Pro) everywhere; SF Pro Rounded for numbers. Nothing to download. */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
-  --r: 10px;
+  --r: 14px;
   --tap: 44px;
   --tap-big: 56px;
-  --tabbar-h: 64px;
-  --mini-h: 60px;
+  --tabbar-h: 84px;
+  --mini-h: 66px;
   --fs: 16px;
   --dur: 160ms;
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -39,47 +40,51 @@ a { color: var(--accent); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- layout ---------- */
+.scroller {
+  position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+}
 .screen {
   max-width: 720px; margin: 0 auto;
   padding: calc(var(--safe-t) + var(--s5)) var(--s4) calc(var(--tabbar-h) + var(--safe-b) + var(--s6));
 }
 .screen.with-mini { padding-bottom: calc(var(--tabbar-h) + var(--mini-h) + var(--safe-b) + var(--s6)); }
-.screen h1 { font: 600 2rem/1.1 var(--font-serif); margin: 0 0 var(--s2); letter-spacing: -0.01em; text-wrap: balance; }
-.screen h2 { font: 600 1.3rem/1.2 var(--font-serif); margin: var(--s6) 0 var(--s3); }
+.screen h1 { font: 700 2.1rem/1.1 var(--font-serif); margin: 0 0 var(--s2); letter-spacing: -0.025em; text-wrap: balance; }
+.screen h2 { font: 700 1.3rem/1.2 var(--font-serif); margin: var(--s6) 0 var(--s3); letter-spacing: -0.015em; }
 .screen h3 { font: 600 1.05rem/1.25 var(--font-ui); margin: 0 0 var(--s1); }
 .lede { color: var(--ink2); margin: 0 0 var(--s5); }
 .stack > * + * { margin-top: var(--s3); }
 
 /* Notebook: faint ruled lines, no rounded cards: content sits on the paper, separated by rules. */
-.ruled { border-top: 1px solid var(--rule); }
 .ruled > * { border-bottom: 1px solid var(--rule); }
+.ruled > *:last-child { border-bottom: 0; }
 .row {
   display: flex; align-items: center; gap: var(--s3);
   min-height: var(--tap); padding: var(--s3) 0;
 }
 .row .grow { flex: 1; }
-.panel { background: var(--surface); border-radius: var(--r); padding: var(--s4); }
+.panel { background: var(--surface); border-radius: 20px; padding: var(--s4); }
 
 /* ---------- controls ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
-  min-height: var(--tap); padding: 0 var(--s4); border-radius: var(--r);
+  min-height: var(--tap); padding: 0 var(--s4); border-radius: 999px;
   border: 1.5px solid var(--rule); background: transparent; color: var(--ink);
   font-weight: 600; transition: background var(--dur), transform var(--dur);
 }
 .btn:active { transform: scale(0.98); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--onAccent); }
 .btn.danger { border-color: var(--danger); color: var(--danger); }
-.btn.big { min-height: var(--tap-big); font-size: 1.15rem; width: 100%; }
+.btn.big { min-height: var(--tap-big); font-size: 1.1rem; width: 100%; }
 .btn.link { border: 0; padding: 0 var(--s1); color: var(--accent); min-height: var(--tap); }
 .btn:disabled { opacity: 0.5; }
 
 .seg {
   display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
-  border: 1.5px solid var(--rule); border-radius: var(--r); padding: 3px; gap: 3px;
+  border: 0; background: var(--surface); border-radius: 999px; padding: 3px; gap: 3px;
 }
 .seg button {
-  min-height: calc(var(--tap) - 6px); border: 0; border-radius: calc(var(--r) - 3px);
+  min-height: calc(var(--tap) - 6px); border: 0; border-radius: 999px; transition: background var(--dur), color var(--dur);
   background: transparent; color: var(--ink2); font-weight: 600;
 }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
@@ -94,37 +99,67 @@ a { color: var(--accent); }
 
 .field { display: grid; gap: var(--s1); }
 .field input, .field select {
-  min-height: var(--tap); border: 1.5px solid var(--rule); border-radius: var(--r);
+  min-height: var(--tap); border: 0; border-radius: 12px;
   background: var(--surface); padding: 0 var(--s3);
 }
 
 .banner {
   display: flex; gap: var(--s3); align-items: flex-start;
-  border-left: 3px solid var(--ink); background: var(--surface);
-  padding: var(--s3) var(--s4); border-radius: 0 var(--r) var(--r) 0; margin-bottom: var(--s4);
+  background: var(--surface);
+  padding: var(--s3) var(--s4); border-radius: var(--r); margin-bottom: var(--s4);
   font-size: 0.95rem;
 }
-.banner.warn { border-left-color: var(--danger); }
+.banner.warn { box-shadow: inset 4px 0 0 var(--danger); }
 .banner p { margin: 0; }
 
-/* ---------- tab bar + mini player ---------- */
+/* ---------- floating glass tab bar + mini player ---------- */
 .tabbar {
-  position: fixed; inset: auto 0 0 0; z-index: 20;
+  position: fixed; z-index: 20; left: 16px; right: 16px; bottom: calc(var(--safe-b) + 10px);
+  max-width: 460px; margin: 0 auto; height: 64px; padding: 6px;
   display: grid; grid-template-columns: repeat(4, 1fr);
-  background: var(--bg); border-top: 1px solid var(--rule);
-  padding-bottom: var(--safe-b);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+  border: 0.5px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.14), inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent);
 }
+.tabbar .glide {
+  position: absolute; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 12px) / 4); border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  transition: transform 420ms cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+@media (prefers-reduced-motion: reduce) { .tabbar .glide { transition: none; } }
 .tabbar button {
-  height: var(--tabbar-h); border: 0; background: none; color: var(--ink2);
-  display: grid; place-items: center; align-content: center; gap: 2px; font-size: 0.75rem; font-weight: 600;
+  position: relative; z-index: 1; border: 0; background: none; color: var(--ink);
+  display: grid; place-items: center; align-content: center; gap: 1px; font-size: 0.7rem; font-weight: 600; border-radius: 999px;
 }
-.tabbar button[aria-current="page"] { color: var(--ink); }
-.tabbar button[aria-current="page"] svg { stroke-width: 2.4; }
+.tabbar button[aria-current="page"] { color: var(--accent); }
+.tabbar button svg { transition: transform 200ms; }
+.tabbar button:active svg { transform: scale(0.9); }
 
 .mini {
-  position: fixed; left: 0; right: 0; z-index: 21;
-  bottom: calc(var(--tabbar-h) + var(--safe-b));
-  height: var(--mini-h);
-  display: flex; align-items: center; gap: var(--s3); padding: 0 var(--s4);
-  border: 0; width: 100%; text-align: left;
+  position: fixed; z-index: 21; left: 16px; right: 16px; max-width: 460px; margin: 0 auto;
+  bottom: calc(var(--safe-b) + 84px); height: 56px; border-radius: 999px;
+  display: flex; align-items: center; gap: var(--s3); padding: 0 var(--s4) 0 var(--s3);
+  border: 0.5px solid rgba(255, 255, 255, 0.08); text-align: left;
+  background: color-mix(in srgb, #0e0e0e 86%, transparent) !important;
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  animation: rise 360ms cubic-bezier(0.2, 0.9, 0.2, 1);
 }
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } }
+
+/* Player layer: slides up from the bottom to fill the screen; slides back down when closed. */
+.player-layer.in { animation: player-in 380ms cubic-bezier(0.2, 0.9, 0.2, 1); }
+.player-layer.out { animation: player-out 260ms cubic-bezier(0.5, 0, 0.8, 0.4) forwards; }
+@keyframes player-in { from { transform: translateY(100%); } }
+@keyframes player-out { to { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .player-layer.in, .player-layer.out { animation: none; } }
+
+/* Reading text (exercise pages, Learn): more air between lines and paragraphs. */
+.prose { line-height: 1.6; }
+.prose p { margin: 0 0 var(--s4); }
+.prose ol, .prose ul { padding-left: 1.25em; margin: 0 0 var(--s4); }
+.prose li + li { margin-top: 10px; }
+.prose h2 { margin: var(--s6) 0 var(--s3); }
+.list-row { padding: var(--s3) 0 !important; gap: var(--s4) !important; }

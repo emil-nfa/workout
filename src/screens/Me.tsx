@@ -9,6 +9,7 @@ import { isIOS, isStandalone, readFileBytes, saveFile, storageEstimate } from ".
 import { strToU8 } from "fflate";
 import { exportCsv, exportObsidianZip } from "../logic/exports";
 import { ProgramEditor } from "./ProgramEditor";
+import { scrollTop } from "../lib/scroll";
 
 export function Me() {
   const { settings } = useApp();
@@ -48,7 +49,7 @@ export function Me() {
   }
 
   const age = daysSince(settings.lastBackupAt);
-  if (editing) return <ProgramEditor onBack={() => { setEditing(false); scrollTo(0, 0); }} />;
+  if (editing) return <ProgramEditor onBack={() => { setEditing(false); scrollTop(); }} />;
   const stamp = new Date().toISOString().slice(0, 10);
   const persistState = (persist?.value as { state?: string } | undefined)?.state;
   const mb = (n: number) => (n / 1_048_576).toFixed(n < 10_485_760 ? 1 : 0);
@@ -58,7 +59,7 @@ export function Me() {
       <h1>Me</h1>
 
       <h2>Program</h2>
-      <button className="btn big" onClick={() => { setEditing(true); scrollTo(0, 0); }}>See and edit your program</button>
+      <button className="btn big" onClick={() => { setEditing(true); scrollTop(); }}>See and edit your program</button>
 
       <h2>Backup</h2>
       <p className="muted" style={{ marginTop: 0 }}>

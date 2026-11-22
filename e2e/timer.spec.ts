@@ -11,8 +11,7 @@ test("rest timer survives a jump in time (screen locked)", async ({ page }) => {
   const pad = page.getByRole("dialog", { name: /Edit/ });
   await pad.getByRole("button", { name: "2", exact: true }).click();
   await pad.getByRole("button", { name: "0", exact: true }).click();
-  await pad.getByRole("button", { name: "Done" }).click();
-  await page.locator(".set-r.current .tick").first().click();
+  await pad.getByRole("button", { name: "Done" }).click(); // logs the set too
   await expect(page.locator(".rest .big")).toHaveText(/^2:00|^1:59/);
   await page.clock.fastForward(70_000);
   await expect(page.locator(".rest .big")).toHaveText(/^0:5[0-9]/);

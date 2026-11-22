@@ -64,7 +64,7 @@ export function FinishFlow({ session, ps, undone, onBack }: { session: WorkoutSe
   return (
     <div className="wk" style={{ paddingTop: "calc(var(--safe-t) + var(--s6))", paddingBottom: "calc(var(--safe-b) + var(--s4))", display: "flex", flexDirection: "column" }}>
       <p className="caps muted" style={{ margin: 0 }}>Done</p>
-      <h1 style={{ font: "700 2.6rem/1 var(--font-num)", margin: "var(--s1) 0 0", textTransform: "uppercase" }}>{ended.key} · {ps.title}</h1>
+      <h1 style={{ font: "700 2.2rem/1.1 var(--font-serif)", margin: "var(--s1) 0 0", letterSpacing: "-0.02em" }}>{ended.key} · {ps.title}</h1>
       <div className="sumgrid">
         <div><div className="k">Time</div><div className="v">{fmtClock(sum.durationSec)}</div></div>
         <div><div className="k">Sets</div><div className="v">{sum.sets}</div></div>

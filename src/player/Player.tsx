@@ -66,7 +66,7 @@ export function MiniPlayer() {
   const restLeft = rest && player.kind !== "stretch" ? Math.ceil((rest.endsAt - now) / 1000) : null;
   return (
     <button data-mode="gym" className="mini" onClick={() => setPlayer({ ...player, kind: player.kind ?? "workout", open: true } as typeof player)}>
-      <span style={{ width: 4, alignSelf: "stretch", background: "var(--accent)", margin: "12px 0" }} aria-hidden />
+      <span style={{ width: 10, height: 10, borderRadius: 999, background: "var(--accent)", flex: "none", marginLeft: 6 }} aria-hidden />
       <span style={{ flex: 1, fontWeight: 600 }}>{label}</span>
       {restLeft !== null && restLeft > 0 ? (
         <span className="num" style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }} aria-label="Rest left">Rest {fmtClock(restLeft)}</span>

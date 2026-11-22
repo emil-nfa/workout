@@ -15,7 +15,6 @@ import { RestBar, type RestState } from "./RestBar";
 import { FinishFlow } from "./Finish";
 import "./player.css";
 import { ExerciseThumb, ExerciseVideo } from "../components/ExerciseVisual";
-import { MachinePhoto } from "../components/MachinePhoto";
 
 const needsWeight = (t: LoadType) => t === "stack" || t === "dumbbell" || t === "plate" || t === "assisted" || t === "distance";
 const fmt = (n?: number) => (n === undefined ? "" : Number.isInteger(n) ? String(n) : String(+n.toFixed(2)));
@@ -24,12 +23,13 @@ interface SlotInfo { exerciseId: string; suggestion?: Suggestion; history: Expos
 
 export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramSession }) {
   const { setPlayer, settings } = useApp();
-  const now = useNow();
   const rows = useLiveQuery(() => db.sets.where("sessionId").equals(session.id).toArray(), [session.id]);
   const prefs = useLiveQuery(() => db.exercisePrefs.toArray());
   const rest = useLiveQuery(() => db.meta.get("rest"))?.value as RestState | undefined;
   const [info, setInfo] = useState<Record<number, SlotInfo>>({});
-  const [pad, setPad] = useState<{ rowId: string; field: PadField } | null>(null);
+  // thenTick: the pad was opened by a ✓ that was missing a value; Done then logs the set in one go.
+  const [pad, setPad] = useState<{ rowId: string; field: PadField; thenTick?: boolean } | null>(null);
+  const [warmOpen, setWarmOpen] = useState(true);
   const [menu, setMenu] = useState<{ kind: "exercise"; slot: number } | { kind: "set"; rowId: string } | { kind: "swap"; slot: number } | { kind: "how"; exerciseId: string } | { kind: "session" } | null>(null);
   const [toast, setToast] = useState<{ text: string; undo?: () => void } | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -38,10 +38,24 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   const toastTimer = useRef<number>();
 
   // Plan the rows (suggestions) once per session, and whenever a slot has none (after a swap).
-  useEffect(() => { void materialize(session, ps); }, [session.id, ps, session.swaps]);
+  const swapKey = JSON.stringify(session.swaps ?? {});
+  useEffect(() => { void materialize(session, ps); }, [session.id, ps, swapKey]);
+
+  // The page behind an open sheet must not scroll (iOS otherwise scrolls the page instead of the sheet).
+  const sheetOpen = !!menu || !!pad;
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [sheetOpen]);
+
+  // Fold the warm-up away (animated) once the first set is logged.
+  const anyDone = !!rows?.some((r) => r.done);
+  const foldedOnce = useRef(false);
+  useEffect(() => { if (anyDone && !foldedOnce.current) { foldedOnce.current = true; setWarmOpen(false); } }, [anyDone]);
 
   // Suggestion + history per slot, for chips, PREVIOUS column and the +2.5 marker.
-  const swapKey = JSON.stringify(session.swaps ?? {});
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -82,16 +96,16 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       return;
     }
     // Missing a value we need: open the pad on it instead of logging nonsense.
-    if (needsWeight(lt) && r.weight === undefined) return setPad({ rowId: r.id, field: "weight" });
+    if (needsWeight(lt) && r.weight === undefined) return setPad({ rowId: r.id, field: "weight", thenTick: true });
     if (lt === "time" ? r.durationSec === undefined : lt === "distance" ? r.distanceM === undefined : r.reps === undefined)
-      return setPad({ rowId: r.id, field: lt === "time" ? "time" : lt === "distance" ? "dist" : "reps" });
+      return setPad({ rowId: r.id, field: lt === "time" ? "time" : lt === "distance" ? "dist" : "reps", thenTick: true });
 
     const wasCurrent = current?.rowId === r.id;
-    await db.sets.update(r.id, { done: true, at: new Date().toISOString() });
     const all = rows!.map((x) => (x.id === r.id ? { ...x, done: true } : x));
     const { next, rest: shouldRest } = afterTick(ps, rows!, r.id);
     const nextRow = next ? all.find((x) => x.id === next.rowId) : undefined;
 
+    let restState: RestState | null = null;
     if (shouldRest && nextRow) {
       const total = restFor(r.slot, r.exerciseId);
       const nextEx = EXERCISE_BY_ID[nextRow.exerciseId];
@@ -100,11 +114,14 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       const val = nextRow.durationSec !== undefined ? `${nextRow.durationSec} s`
         : nextRow.weight !== undefined && nextRow.reps !== undefined ? `${fmt(nextRow.weight)} kg × ${nextRow.reps}`
         : nextRow.reps !== undefined ? `${nextRow.reps} reps` : "";
-      const state: RestState = { endsAt: Date.now() + total * 1000, totalSec: total, defaultSec: total, exerciseId: r.exerciseId, nextLabel: label, nextValue: val };
-      await db.meta.put({ key: "rest", value: state });
-    } else if (!nextRow) {
-      await db.meta.delete("rest");
+      restState = { endsAt: Date.now() + total * 1000, totalSec: total, defaultSec: total, exerciseId: r.exerciseId, nextLabel: label, nextValue: val };
     }
+    // One transaction: the tick and the rest timer land together (one re-render instead of several).
+    await db.transaction("rw", db.sets, db.meta, async () => {
+      await db.sets.update(r.id, { done: true, at: new Date().toISOString() });
+      if (restState) await db.meta.put({ key: "rest", value: restState });
+      else if (!nextRow) await db.meta.delete("rest");
+    });
 
     showToast(`Set logged`, async () => { await db.sets.update(r.id, { done: false, at: undefined }); setExpanded((e) => new Set(e).add(r.slot)); });
 
@@ -112,10 +129,9 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
     const slotDone = all.filter((x) => x.slot === r.slot).every((x) => x.done);
     if (wasCurrent && slotDone && nextRow && nextRow.slot !== r.slot) {
       setExpanded((e) => { const n = new Set(e); n.delete(r.slot); return n; });
-      requestAnimationFrame(() => {
-        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-        document.getElementById(`card-${nextRow.slot}`)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-      });
+      // Let the card fold first (about 0.3 s), then glide to the next exercise.
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.setTimeout(() => document.getElementById(`card-${nextRow.slot}`)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }), reduce ? 0 : 330);
     }
   }
 
@@ -135,7 +151,6 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   }
 
   const title = `${session.key} · ${ps.title}`;
-  const elapsed = (now - +new Date(session.startedAt)) / 1000;
   const undone = rows.filter((r) => !r.done).length;
 
   if (finishing) return <FinishFlow session={session} ps={ps} undone={undone} onBack={() => setFinishing(false)} />;
@@ -145,13 +160,16 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       <header className="wk-head">
         <button className="icon-btn" aria-label="Minimise workout" onClick={() => setPlayer({ open: false, kind: "workout" })}><ChevronDown aria-hidden /></button>
         <div className="title">{title}</div>
-        <div className="clock" aria-label="Elapsed time">{fmtClock(elapsed)}</div>
+        <ElapsedClock start={session.startedAt} />
         <button className="icon-btn" aria-label="Workout options" onClick={() => setMenu({ kind: "session" })}><MoreVertical aria-hidden /></button>
       </header>
 
-      <details className="warm" open={!rows.some((r) => r.done)}>
-        <summary>Warm-up · 7 min <span className="muted" style={{ marginLeft: "auto", fontWeight: 500 }}>{warmDone.size}/{WARMUPS[ps.kind].length}</span></summary>
-        <ul>
+      <section className="warm">
+        <button className="warm-head" aria-expanded={warmOpen} onClick={() => setWarmOpen(!warmOpen)}>
+          Warm-up · 7 min <span className="muted" style={{ marginLeft: "auto", fontWeight: 500 }}>{warmDone.size}/{WARMUPS[ps.kind].length}</span>
+          <ChevronDown size={18} aria-hidden style={{ marginLeft: 8, transition: "transform 300ms", transform: warmOpen ? "rotate(180deg)" : "none" }} />
+        </button>
+        <div className={`fold${warmOpen ? "" : " closed"}`}><div><ul>
           {WARMUPS[ps.kind].map((w, i) => (
             <li key={i}>
               <label>
@@ -160,8 +178,8 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
               </label>
             </li>
           ))}
-        </ul>
-      </details>
+        </ul></div></div>
+      </section>
 
       {ps.slots.map((slot, i) => {
         const si = info[i];
@@ -183,39 +201,29 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
         const rowClass = lt === "time" ? "timed" : lt === "distance" ? "dist" : "";
         const swapped = exId !== slot.exerciseId;
 
-        if (collapsed) {
-          return (
-            <section key={i} id={`card-${i}`} className="card collapsed">
-              <button className="card-top" style={{ width: "100%", border: 0, background: "none", textAlign: "left", padding: 0 }} onClick={() => setExpanded((e) => new Set(e).add(i))} aria-label={`${ex?.name}: done, tap to open`}>
-                <span className="thumb" aria-hidden><Check size={20} /></span>
-                <span className="card-name">
-                  <span className="l1">{ex?.name}</span><br />
-                  <span className="sum">{working.length} sets · top {lt === "time" ? `${top?.durationSec ?? "-"} s` : `${fmt(showW(top?.weight)) || "BW"} × ${top?.reps ?? "-"}`}</span>
-                </span>
-              </button>
-            </section>
-          );
-        }
-
         return (
-          <section key={i} id={`card-${i}`} className="card" aria-label={ex?.name}>
-            <div className="card-top">
+          <section key={i} id={`card-${i}`} className={`card${collapsed ? " collapsed" : ""}`} aria-label={ex?.name}>
+            <div className="card-top" onClick={collapsed ? () => setExpanded((e) => new Set(e).add(i)) : undefined}>
               <button className="thumb" style={{ padding: 0, overflow: "hidden" }} aria-label={`How to do ${ex?.name}`} onClick={() => setMenu({ kind: "how", exerciseId: exId })}><ExerciseThumb id={exId} label={ex?.group.slice(0, 4).toUpperCase()} /></button>
               <div className="card-name">
                 <div className="l1">
                   {slot.superset && <span className="ss-tag">{slot.superset.toUpperCase()}{ssIndex} </span>}
                   {ex?.name} <span className="tgt">· {sug?.sets ?? slot.sets} × {tgt}{slot.perSide ? "/side" : ""} · {fmtClock(restFor(i, exId))}</span>
                 </div>
+                {collapsed ? (
+                  <div className="sum">{working.length} sets · top {lt === "time" ? `${top?.durationSec ?? "-"} s` : `${fmt(showW(top?.weight)) || "BW"} × ${top?.reps ?? "-"}`} · tap to open</div>
+                ) : (<>
                 <div className="fr">{ex?.fr}{swapped && <> · swapped from {EXERCISE_BY_ID[slot.exerciseId]?.name}</>}</div>
                 <div className="meta">
                   {sug?.chip && <span className="chip focus">{sug.chip}</span>}
                   {session.deload && <span className="chip">Deload</span>}
-                  {prefOf(exId)?.note && <span className="chip"><StickyNote size={12} aria-hidden /> note</span>}
-                </div>
+                  {prefOf(exId)?.note && <span className="chip"><StickyNote size={12} aria-hidden /> {prefOf(exId)!.note}</span>}
+                </div></>)}
               </div>
               <button className="icon-btn" aria-label={`${ex?.name} options`} onClick={() => setMenu({ kind: "exercise", slot: i })}><MoreVertical aria-hidden /></button>
             </div>
 
+            <div className={`fold${collapsed ? " closed" : ""}`}><div>
             <div className="sets" role="table" aria-label={`${ex?.name} sets`}>
               <div className={`set-h ${rowClass}`} role="row">
                 <span role="columnheader">Set</span><span role="columnheader">Previous</span>
@@ -252,6 +260,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
               })}
               <button className="add-set" onClick={() => addSet(i)}>+ Set</button>
             </div>
+            </div></div>
           </section>
         );
       })}
@@ -268,11 +277,15 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
           onField={(f) => setPad({ ...pad, field: f })}
           perSideMode={(() => { const r = byId.get(pad.rowId)!; return EXERCISE_BY_ID[r.exerciseId]?.loadType === "plate" && plateMode(r.exerciseId) === "perSide"; })()}
           increment={prefOf(byId.get(pad.rowId)!.exerciseId)?.incrementKg ?? DEFAULT_INCREMENT[EXERCISE_BY_ID[byId.get(pad.rowId)!.exerciseId]?.loadType ?? "stack"]}
-          onClose={() => setPad(null)}
+          onClose={async () => {
+            const p = pad;
+            setPad(null);
+            if (p.thenTick) { const fresh = await db.sets.get(p.rowId); if (fresh && !fresh.done) await tick(fresh); }
+          }}
         />
       )}
 
-      {rest && <RestBar rest={rest} now={now} />}
+      {rest && <RestBar rest={rest} />}
       {toast && (
         <div className="toast" role="status">
           {toast.text}
@@ -364,7 +377,6 @@ function MenuBody({ menu, session, ps, rows, info, setMenu, addSet, onFinish }: 
         <ol style={{ paddingLeft: "1.2em" }}>{e.how.map((x, i) => <li key={i} style={{ marginBottom: 6 }}>{x}</li>)}</ol>
         {!!e.cues.length && <p><b>Cues:</b> {e.cues.join(" ")}</p>}
         {!!e.avoid.length && <p><b>Avoid:</b> {e.avoid.join(" ")}</p>}
-        <MachinePhoto exerciseId={e.id} />
         <button className="btn big" style={{ marginTop: "var(--s3)" }} onClick={() => setMenu(null)}>Close</button>
       </div>
     );
@@ -411,4 +423,10 @@ function MenuBody({ menu, session, ps, rows, info, setMenu, addSet, onFinish }: 
       <button onClick={() => setMenu(null)}>Cancel</button>
     </div>
   );
+}
+
+/** The elapsed-time clock re-renders on its own, every second, without re-rendering the whole logging screen. */
+function ElapsedClock({ start }: { start: string }) {
+  const now = useNow();
+  return <div className="clock" aria-label="Elapsed time">{fmtClock((now - +new Date(start)) / 1000)}</div>;
 }

@@ -29,12 +29,12 @@ describe("content data", () => {
   });
 });
 
-import { LEARN, GLOSSARY } from "../data/learn";
+import { LEARN } from "../data/learn";
 import { SOURCES } from "../data/sources";
 describe("learn content", () => {
   it("every card cites sources that exist, and no dashes in the text", () => {
     for (const c of LEARN) for (const id of c.sources) expect(SOURCES[id], `${c.id}: ${id}`).toBeDefined();
-    expect(JSON.stringify([LEARN, GLOSSARY])).not.toMatch(/[–—]/);
+    expect(JSON.stringify(LEARN)).not.toMatch(/[–—]/);
   });
   it("every exercise source id exists", () => {
     for (const e of EXERCISES) for (const id of e.sources ?? []) expect(SOURCES[id], `${e.id}: ${id}`).toBeDefined();

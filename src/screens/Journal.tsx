@@ -6,6 +6,7 @@ import type { Muscle } from "../data/types";
 import { fmtClock, localDate } from "../logic/rotation";
 import { WEEKLY_TARGET, activityByDay, e1rmSeries, personalBests, weekStart, weeklySets } from "../logic/stats";
 import { ActivityCalendar, LineChart, TargetBars } from "../components/Charts";
+import { scrollTop } from "../lib/scroll";
 
 const MUSCLE_LABEL: Partial<Record<Muscle, string>> = {
   lats: "Lats", upperBack: "Upper back", rearDelts: "Rear shoulders", chest: "Chest", frontDelts: "Front shoulders",
@@ -50,7 +51,7 @@ function History({ sessions, sets, stretches, onOpen }: { sessions: WorkoutSessi
         {items.map((it) =>
           it.kind === "w" ? (
             <li key={it.s.id}>
-              <button className="row" style={{ width: "100%", border: 0, background: "none", textAlign: "left" }} onClick={() => { onOpen(it.s); scrollTo(0, 0); }}>
+              <button className="row" style={{ width: "100%", border: 0, background: "none", textAlign: "left" }} onClick={() => { onOpen(it.s); scrollTop(); }}>
                 <span className="num muted" style={{ width: "6.5em" }}>{day(it.at)}</span>
                 <span className="grow"><b>{it.s.key}</b> · workout{it.s.deload ? " (deload)" : ""}<br /><span className="muted" style={{ fontSize: "0.85rem" }}>{(() => { const n = sets.filter((x) => x.sessionId === it.s.id && x.done && x.type !== "warmup").length; return `${n} set${n === 1 ? "" : "s"}`; })()}</span></span>
                 <span className="num muted">{it.s.endedAt ? fmtClock((+new Date(it.s.endedAt) - +new Date(it.s.startedAt)) / 1000) : ""}</span>

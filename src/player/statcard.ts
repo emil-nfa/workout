@@ -15,8 +15,8 @@ export async function renderStatCard(s: WorkoutSession, ps: ProgramSession, sum:
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
   const g = c.getContext("2d")!;
-  const num = (w: number, px: number) => `${w} ${px}px "Barlow Condensed", system-ui, sans-serif`;
-  const ui = (w: number, px: number) => `${w} ${px}px "Barlow", system-ui, sans-serif`;
+  const num = (w: number, px: number) => `${w} ${px}px ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif`;
+  const ui = (w: number, px: number) => `${w} ${px}px -apple-system, "SF Pro Text", system-ui, sans-serif`;
   const rule = (y: number) => { g.fillStyle = T.rule; g.fillRect(M, y, W - 2 * M, 3); };
 
   g.fillStyle = T.bg; g.fillRect(0, 0, W, H);
@@ -26,7 +26,7 @@ export async function renderStatCard(s: WorkoutSession, ps: ProgramSession, sum:
   g.fillStyle = T.ink2; g.font = ui(600, 34); g.textBaseline = "alphabetic";
   g.fillText(date.toUpperCase(), M, M + 90);
 
-  g.fillStyle = T.ink; g.font = num(700, 210);
+  g.fillStyle = T.ink; g.font = num(800, 150);
   g.fillText(`${s.key} · ${ps.title}`.toUpperCase(), M, M + 300, W - 2 * M);
   rule(M + 350);
 

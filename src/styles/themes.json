@@ -1,27 +1,67 @@
 {
   "_comment": "Single source of colour tokens. Checked by scripts/contrast.mjs (npm run contrast). Cobalt = focus only.",
   "notebookLight": {
-    "bg": "#F4EFE4", "surface": "#EDE6D7", "surface2": "#E4DCCA",
-    "ink": "#1C1B19", "ink2": "#57524A", "suggest": "#625C54",
-    "rule": "#D3CAB7", "accent": "#2D4FD6", "onAccent": "#F4EFE4", "accentSoft": "#DCE2F7",
-    "danger": "#A3352A", "onDanger": "#F4EFE4", "chip": "#FFFFFF", "onChip": "#1C1B19"
+    "bg": "#FFFFFF",
+    "surface": "#F2F2F7",
+    "surface2": "#E9E9EE",
+    "ink": "#1C1C1E",
+    "ink2": "#5A5A5F",
+    "suggest": "#636366",
+    "rule": "#E3E3E8",
+    "accent": "#2D4FD6",
+    "onAccent": "#FFFFFF",
+    "accentSoft": "#E3E8FB",
+    "danger": "#C0362C",
+    "onDanger": "#FFFFFF",
+    "chip": "#1C1C1E",
+    "onChip": "#FFFFFF"
   },
   "notebookDark": {
-    "bg": "#1E1C19", "surface": "#26231F", "surface2": "#2C2924",
-    "ink": "#EDE6D8", "ink2": "#B4AC9D", "suggest": "#A39B8D",
-    "rule": "#3A3530", "accent": "#6E8BFF", "onAccent": "#0E0E0E", "accentSoft": "#26304F",
-    "danger": "#E2796D", "onDanger": "#0E0E0E", "chip": "#EDE6D8", "onChip": "#1C1B19"
+    "bg": "#000000",
+    "surface": "#1C1C1E",
+    "surface2": "#2C2C2E",
+    "ink": "#FFFFFF",
+    "ink2": "#A1A1A6",
+    "suggest": "#98989D",
+    "rule": "#2C2C2E",
+    "accent": "#6E8BFF",
+    "onAccent": "#000000",
+    "accentSoft": "#1B2240",
+    "danger": "#FF6961",
+    "onDanger": "#000000",
+    "chip": "#FFFFFF",
+    "onChip": "#000000"
   },
   "gym": {
-    "bg": "#0E0E0E", "surface": "#171717", "surface2": "#1F1F1F",
-    "ink": "#F2EFE8", "ink2": "#A8A49C", "suggest": "#9A968E",
-    "rule": "#2A2A2A", "accent": "#6E8BFF", "onAccent": "#000000", "accentSoft": "#1B2240",
-    "danger": "#E2796D", "onDanger": "#000000", "chip": "#F2EFE8", "onChip": "#0E0E0E"
+    "bg": "#0E0E0E",
+    "surface": "#171717",
+    "surface2": "#1F1F1F",
+    "ink": "#F2EFE8",
+    "ink2": "#A8A49C",
+    "suggest": "#9A968E",
+    "rule": "#2A2A2A",
+    "accent": "#6E8BFF",
+    "onAccent": "#000000",
+    "accentSoft": "#1B2240",
+    "danger": "#E2796D",
+    "onDanger": "#000000",
+    "chip": "#F2EFE8",
+    "onChip": "#0E0E0E"
   },
   "statCard": {
-    "bg": "#0E0E0E", "surface": "#0E0E0E", "surface2": "#171717",
-    "ink": "#F2EFE8", "ink2": "#A8A49C", "suggest": "#9A968E",
-    "rule": "#2A2A2A", "accent": "#6E8BFF", "onAccent": "#000000", "accentSoft": "#1B2240",
-    "danger": "#E2796D", "onDanger": "#000000", "chip": "#F2EFE8", "onChip": "#0E0E0E"
+    "bg": "#0E0E0E",
+    "surface": "#0E0E0E",
+    "surface2": "#171717",
+    "ink": "#F2EFE8",
+    "ink2": "#A8A49C",
+    "suggest": "#9A968E",
+    "rule": "#2A2A2A",
+    "accent": "#6E8BFF",
+    "onAccent": "#000000",
+    "accentSoft": "#1B2240",
+    "danger": "#E2796D",
+    "onDanger": "#000000",
+    "chip": "#F2EFE8",
+    "onChip": "#0E0E0E"
   }
 }

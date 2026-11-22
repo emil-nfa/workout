@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { ExerciseThumb, ExerciseVideo } from "../components/ExerciseVisual";
-import { MachinePhoto } from "../components/MachinePhoto";
 import { BodyMap } from "../components/BodyMap";
 import { EXERCISES } from "../data/exercises";
-import { GLOSSARY, LEARN } from "../data/learn";
+import { LEARN } from "../data/learn";
 import { SOURCES } from "../data/sources";
 import type { Exercise, ExerciseGroup } from "../data/types";
+import { scrollTop } from "../lib/scroll";
 
 const GROUPS: ExerciseGroup[] = ["Back", "Chest", "Shoulders", "Posture", "Arms", "Legs", "Core", "Mobility", "Stretch"];
 
@@ -59,7 +59,7 @@ export function Library() {
             <ul className="ruled" style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {items.map((e) => (
                 <li key={e.id}>
-                  <button className="row" style={{ width: "100%", border: 0, background: "none", textAlign: "left" }} onClick={() => { setOpen(e); scrollTo(0, 0); }}>
+                  <button className="row list-row" style={{ width: "100%", border: 0, background: "none", textAlign: "left" }} onClick={() => { setOpen(e); scrollTop(); }}>
                     <ExerciseThumb id={e.id} size={56} />
                     <span className="grow">
                       <span style={{ fontWeight: 600 }}>{e.name}</span><br />
@@ -80,7 +80,7 @@ export function Library() {
 
 function Detail({ e, onBack }: { e: Exercise; onBack: () => void }) {
   return (
-    <article>
+    <article className="prose">
       <button className="btn link" onClick={onBack} style={{ marginLeft: "calc(-1 * var(--s1))" }}>‹ Library</button>
       <h1>{e.name}</h1>
       <p className="lede">{e.fr}</p>
@@ -96,7 +96,6 @@ function Detail({ e, onBack }: { e: Exercise; onBack: () => void }) {
       <h2>At the gym</h2>
       <p style={{ marginTop: 0 }}><b>Machine:</b> {e.machine ?? e.equipment}</p>
       {e.alternative && <p><b>If it's taken:</b> {e.alternative}</p>}
-      <MachinePhoto exerciseId={e.id} />
       <p style={{ marginTop: "var(--s5)" }}><a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(e.name + " proper form")}`} target="_blank" rel="noreferrer">Watch videos on YouTube</a></p>
     </article>
   );
@@ -107,7 +106,7 @@ function Learn() {
     <>
       <p className="lede">Why the plan looks the way it does, in plain words. Each card says how strong the evidence is.</p>
       {LEARN.map((c) => (
-        <details key={c.id} className="ruled" style={{ padding: "var(--s2) 0" }}>
+        <details key={c.id} className="prose" style={{ padding: "var(--s2) 0", borderBottom: "1px solid var(--rule)" }}>
           <summary style={{ minHeight: "var(--tap)", display: "flex", alignItems: "center", gap: "var(--s2)", cursor: "pointer", fontWeight: 600, fontSize: "1.05rem" }}>
             <span className="grow" style={{ flex: 1 }}>{c.title}</span><span className="chip">{c.evidence}</span>
           </summary>
@@ -120,12 +119,6 @@ function Learn() {
           </ul>
         </details>
       ))}
-      <h2>Glossary</h2>
-      <dl style={{ margin: 0 }}>
-        {GLOSSARY.map(([t, d]) => (
-          <div key={t} className="ruled" style={{ padding: "var(--s2) 0" }}><dt style={{ fontWeight: 600 }}>{t}</dt><dd style={{ margin: 0 }} className="muted">{d}</dd></div>
-        ))}
-      </dl>
       <p className="muted" style={{ fontSize: "0.85rem", marginTop: "var(--s5)" }}>General fitness information, not medical advice.</p>
     </>
   );
