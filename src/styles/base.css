@@ -43,7 +43,7 @@ a { color: var(--accent); }
 .scroller {
   /* 100lvh: the full screen down to the bezel (inset: 0 stops above the home-indicator area on iOS). */
   position: fixed; top: 0; left: 0; right: 0; height: 100lvh; overflow-y: auto; overflow-x: hidden;
-  -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; background: var(--bg);
 }
 .screen {
   max-width: 720px; margin: 0 auto;

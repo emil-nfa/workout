@@ -43,6 +43,13 @@ export default function App() {
     }
   }, []);
 
+  // iOS tints the status-bar area (and its top blur) from the page background: dark while the player covers the screen.
+  const covering = player.open && !closing;
+  useEffect(() => {
+    document.documentElement.style.background = covering ? "#0e0e0e" : "";
+    document.body.style.background = covering ? "#0e0e0e" : "";
+  }, [covering]);
+
   useEffect(() => {
     document.documentElement.dataset.text = settings?.textSize ?? "normal";
   }, [settings?.textSize]);
