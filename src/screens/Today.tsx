@@ -5,12 +5,12 @@ import { useApp } from "../state";
 import { EXERCISE_BY_ID } from "../data/exercises";
 import { STRETCH_ROUTINES } from "../data/stretches";
 import { buildTimeline, totalSeconds } from "../logic/stretchPlan";
-import { daysSince, estimateMinutes, localDate, nextSessionKey, streak } from "../logic/rotation";
+import { estimateMinutes, localDate, nextSessionKey, streak } from "../logic/rotation";
 import { isStandalone, unlockAudio } from "../lib/platform";
 import type { SessionKey } from "../data/types";
 
 export function Today() {
-  const { settings, setPlayer, activeSession, setTab } = useApp();
+  const { settings, setPlayer, activeSession } = useApp();
   // Remember Workout / Stretch between visits (the player replaces this screen while it runs).
   const [mode, setModeState] = useState<"workout" | "stretch">(() => { try { return localStorage.getItem("today-mode") === "stretch" ? "stretch" : "workout"; } catch { return "workout"; } });
   const setMode = (m: "workout" | "stretch") => { setModeState(m); try { localStorage.setItem("today-mode", m); } catch { /* private mode */ } };
@@ -25,9 +25,6 @@ export function Today() {
   const key = (activeSession?.key as SessionKey | undefined) ?? pick ?? next;
   const session = program.sessions.find((s) => s.key === key)!;
   const minutes = estimateMinutes(session.slots);
-  const backupAge = daysSince(settings.lastBackupAt);
-  const hasData = finished.length > 0 || stretchDates.size > 0;
-  const backupDue = hasData && (backupAge === null || backupAge >= 7);
   const today = localDate();
   const doneToday = finished.some((s) => s.startedAt.slice(0, 10) === today);
 
@@ -44,12 +41,6 @@ export function Today() {
       {!isStandalone() && (
         <div className="banner warn" role="note">
           <p><b>You're in a Safari tab.</b> Data here is separate from the installed app. Install it first (Me, Install), then log from the Home Screen icon.</p>
-        </div>
-      )}
-      {backupDue && (
-        <div className="banner" role="note">
-          <p>{backupAge === null ? "No backup yet." : `Last backup ${backupAge} days ago.`}{" "}
-            <button className="btn link" onClick={() => setTab("me")}>Back up now</button></p>
         </div>
       )}
 

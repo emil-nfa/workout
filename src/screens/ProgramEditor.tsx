@@ -1,6 +1,7 @@
 // Program view and editor: see the week, change sets / reps / rest, swap, reorder, add or remove exercises,
 // or reset to the recommended program. Any edit marks the program as customised (app updates then leave it alone).
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useEdgeBack } from "../lib/gestures";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { db, type StoredProgram } from "../db/db";
@@ -18,6 +19,8 @@ export function ProgramEditor({ onBack }: { onBack: () => void }) {
   const program = useLiveQuery(() => db.programs.get(settings.activeProgramId), [settings.activeProgramId]);
   const [key, setKey] = useState<string>("A");
   const [confirmReset, setConfirmReset] = useState(false);
+  const page = useRef<HTMLElement>(null);
+  useEdgeBack(onBack, page);
   if (!program) return null;
   const ps = program.sessions.find((s) => s.key === key) ?? program.sessions[0];
 
@@ -27,7 +30,7 @@ export function ProgramEditor({ onBack }: { onBack: () => void }) {
   const move = (i: number, d: -1 | 1) => { const a = [...ps.slots]; const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; setSlots(a); };
 
   return (
-    <article>
+    <article ref={page}>
       <button className="btn link" onClick={onBack} style={{ marginLeft: "calc(-1 * var(--s1))" }}>‹ Me</button>
       <h1>Your program</h1>
       <p className="lede">{program.customized ? "Edited by you. App updates won't change it." : "The recommended program from the research. Editing it is fine."}</p>

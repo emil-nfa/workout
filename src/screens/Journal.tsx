@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { SwipeRow, useEdgeBack } from "../lib/gestures";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type LoggedSet, type WorkoutSession } from "../db/db";
 import { EXERCISE_BY_ID } from "../data/exercises";
@@ -51,17 +52,23 @@ function History({ sessions, sets, stretches, onOpen }: { sessions: WorkoutSessi
         {items.map((it) =>
           it.kind === "w" ? (
             <li key={it.s.id}>
+              <SwipeRow onDelete={() => db.transaction("rw", db.sessions, db.sets, async () => { await db.sets.where("sessionId").equals(it.s.id).delete(); await db.sessions.delete(it.s.id); })}>
               <button className="row" style={{ width: "100%", border: 0, background: "none", textAlign: "left" }} onClick={() => { onOpen(it.s); scrollTop(); }}>
                 <span className="num muted" style={{ width: "6.5em" }}>{day(it.at)}</span>
                 <span className="grow"><b>{it.s.key}</b> · workout{it.s.deload ? " (deload)" : ""}<br /><span className="muted" style={{ fontSize: "0.85rem" }}>{(() => { const n = sets.filter((x) => x.sessionId === it.s.id && x.done && x.type !== "warmup").length; return `${n} set${n === 1 ? "" : "s"}`; })()}</span></span>
                 <span className="num muted">{it.s.endedAt ? fmtClock((+new Date(it.s.endedAt) - +new Date(it.s.startedAt)) / 1000) : ""}</span>
               </button>
+              </SwipeRow>
             </li>
           ) : (
-            <li key={it.l.id} className="row">
-              <span className="num muted" style={{ width: "6.5em" }}>{day(it.at)}</span>
-              <span className="grow">{it.l.routine[0].toUpperCase() + it.l.routine.slice(1)} stretch{it.l.completed ? "" : " (partial)"}</span>
-              <span className="num muted">{it.l.durationSec ? fmtClock(it.l.durationSec) : ""}</span>
+            <li key={it.l.id}>
+              <SwipeRow onDelete={() => db.stretchLogs.delete(it.l.id)}>
+              <div className="row">
+                <span className="num muted" style={{ width: "6.5em" }}>{day(it.at)}</span>
+                <span className="grow">{it.l.routine[0].toUpperCase() + it.l.routine.slice(1)} stretch{it.l.completed ? "" : " (partial)"}</span>
+                <span className="num muted">{it.l.durationSec ? fmtClock(it.l.durationSec) : ""}</span>
+              </div>
+              </SwipeRow>
             </li>
           ),
         )}
@@ -76,8 +83,10 @@ function SessionDetail({ session, sets, onBack }: { session: WorkoutSession; set
   const done = sets.filter((s) => s.done).sort((a, b) => a.slot - b.slot || a.order - b.order);
   const groups = [...new Set(done.map((s) => s.slot))].map((slot) => done.filter((s) => s.slot === slot));
   const num = (v: string) => (v.trim() === "" ? undefined : Number(v.replace(",", ".")));
+  const page = useRef<HTMLElement>(null);
+  useEdgeBack(onBack, page);
   return (
-    <article>
+    <article ref={page}>
       <button className="btn link" onClick={onBack} style={{ marginLeft: "calc(-1 * var(--s1))" }}>‹ Journal</button>
       <h1>{session.key} · {day(session.startedAt)}</h1>
       <p className="lede">{session.endedAt ? `${fmtClock((+new Date(session.endedAt) - +new Date(session.startedAt)) / 1000)} · ` : ""}{done.filter((s) => s.type !== "warmup").length} working sets</p>

@@ -23,7 +23,7 @@ function blobUrl(id: string): Promise<string> {
 
 export function ExerciseThumb({ id, size = 48, label }: { id: string; size?: number; label?: string }) {
   if (!hasFigure(id)) return <span className="thumb" style={{ width: size, height: size }} aria-hidden>{label}</span>;
-  return <img className="thumb-img" src={thumbUrl(id)} width={size} height={size} alt="" loading="lazy" style={{ width: size, height: size, borderRadius: 8, objectFit: "cover", display: "block", background: "#1f1f1f" }} />;
+  return <img className="thumb-img" src={thumbUrl(id)} width={size} height={size} alt="" loading="lazy" style={{ width: size, height: size, borderRadius: 12, objectFit: "cover", display: "block", background: "#1f1f1f" }} />;
 }
 
 export function ExerciseVideo({ id, name }: { id: string; name: string }) {
@@ -37,7 +37,7 @@ export function ExerciseVideo({ id, name }: { id: string; name: string }) {
   }, [id, play]);
   if (!hasFigure(id)) return null;
   return (
-    <div style={{ position: "relative", aspectRatio: "1", width: "100%", maxWidth: 420, margin: "0 auto", borderRadius: 12, overflow: "hidden", background: "#1f1f1f" }}>
+    <div style={{ position: "relative", aspectRatio: "1", width: "100%", maxWidth: 420, margin: "0 auto", borderRadius: 24, overflow: "hidden", background: "#1f1f1f" }}>
       {src && play ? (
         <video src={src} poster={posterUrl(id)} autoPlay loop muted playsInline aria-label={`${name}, looping 3D demonstration`} style={{ width: "100%", height: "100%", display: "block" }} />
       ) : (

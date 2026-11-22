@@ -1,16 +1,15 @@
 // Guided stretch player, built for distance: the phone lies on the floor 1.5-2 m away.
-// Spoken cues come first; huge countdown and name; whole screen = tap to pause; large Back / Skip edge zones.
+// Silent (no voice, no beeps); huge countdown and name; whole screen = tap to pause or go on; Back and Skip at the bottom.
 // Timing is timestamp based (correct after the screen locks) and saved, so minimising or reloading resumes.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { db, newId } from "../db/db";
 import { useApp } from "../state";
 import { STRETCH_ROUTINES } from "../data/stretches";
 import { EXERCISE_BY_ID } from "../data/exercises";
 import { advance, buildTimeline, jump, pause, remaining, resume, type PlayerClock } from "../logic/stretchPlan";
 import { fmtClock, localDate, streak } from "../logic/rotation";
-import { beep, say } from "../lib/platform";
 import { ExerciseVideo } from "../components/ExerciseVisual";
 import { useNow } from "./Player";
 import "./player.css";
@@ -26,7 +25,6 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
   const [clock, setClock] = useState<PlayerClock | null>(null);
   const [ended, setEnded] = useState<null | { completed: boolean; durationSec: number }>(null);
   const now = useNow(250);
-  const spoken = useRef(-1);
 
   // Load (or start) the clock once.
   useEffect(() => {
@@ -42,19 +40,12 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
 
   const store = (c: PlayerClock) => { setClock(c); void db.meta.put({ key: "stretch", value: { routineId, startedAt, clock: c } satisfies Saved }); };
 
-  // Roll the timeline forward; speak and beep when a new segment starts.
+  // Roll the timeline forward (no sound: the routine is followed on screen).
   useEffect(() => {
     if (!clock || ended) return;
     const { clock: c, started } = advance(tl, clock, now);
-    if (started.length) {
-      store(c);
-      if (now - c.segStartedAt < 1500) beep(1); // only cue live transitions, not catch-up after a lock
-    }
+    if (started.length) store(c);
     if (c.seg >= tl.length) return void finish(true);
-    if (spoken.current !== c.seg && c.pausedAt === undefined && now - c.segStartedAt < 1500) {
-      spoken.current = c.seg;
-      say(tl[c.seg].say);
-    }
   }, [now, clock, ended]);
 
   async function finish(completed: boolean) {
@@ -62,7 +53,6 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
     setEnded({ completed, durationSec });
     await db.stretchLogs.put({ id: newId(), date: localDate(), routine: routineId, startedAt, durationSec, completed });
     await db.meta.delete("stretch");
-    if (completed) say("Done. Nice work.");
   }
 
   const dates = useLiveQuery(async () => new Set((await db.stretchLogs.toArray()).filter((l) => l.completed).map((l) => l.date)));
@@ -97,7 +87,7 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
   const phaseColor = seg.kind === "push" ? "var(--accent)" : "var(--ink)";
 
   const togglePause = () => store(paused ? resume(clock, Date.now()) : pause(clock, Date.now()));
-  const go = (dir: 1 | -1) => { spoken.current = -1; store(jump(tl, clock, Date.now(), dir)); };
+  const go = (dir: 1 | -1) => store(jump(tl, clock, Date.now(), dir));
 
   return (
     <div className="stretch" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", padding: "calc(var(--safe-t) + var(--s2)) var(--s3) calc(var(--safe-b) + var(--s3))", userSelect: "none" }}>
@@ -114,34 +104,32 @@ export function StretchPlayer({ routineId, startedAt }: { routineId: "morning" |
         <button className="btn" onClick={() => { store(pause(clock, Date.now())); }} aria-label="Pause to end or continue">End</button>
       </header>
 
-      {/* Whole middle area: tap to pause. Edge zones: back and skip. */}
+      {/* Whole middle area: tap to pause, tap again to go on. */}
       <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center", gap: "var(--s2)", marginTop: "var(--s2)" }}>
         <button aria-label={paused ? "Resume" : "Pause"} onClick={togglePause} style={{ position: "absolute", inset: 0, background: "none", border: 0, zIndex: 1 }} />
-        <button aria-label="Back to the previous move" onClick={() => go(-1)} style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "18%", zIndex: 2, background: "none", border: 0, color: "var(--ink2)", fontWeight: 600, textAlign: "left" }}>‹ Back</button>
-        <button aria-label="Skip to the next move" onClick={() => go(1)} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "18%", zIndex: 2, background: "none", border: 0, color: "var(--ink2)", fontWeight: 600, textAlign: "right" }}>Skip ›</button>
 
         <div style={{ width: "62%", margin: "0 auto" }}><ExerciseVideo id={seg.exerciseId} name={ex?.name ?? ""} /></div>
-        <div style={{ font: "700 clamp(1.8rem, 8vw, 2.6rem)/1.1 var(--font-serif)", letterSpacing: "-0.02em", padding: "0 18%" }}>{ex?.name}</div>
+        <div style={{ font: "700 clamp(1.8rem, 8vw, 2.6rem)/1.1 var(--font-serif)", letterSpacing: "-0.02em", padding: "0 var(--s4)" }}>{ex?.name}</div>
         <div className="muted" style={{ fontSize: "1.05rem" }}>{seg.side ? `${seg.side === "right" ? "Right" : "Left"} side · ` : ""}{seg.label}</div>
         <div aria-live="off" style={{ font: "700 clamp(7rem, 38vw, 12rem)/0.9 var(--font-num)", fontVariantNumeric: "tabular-nums", color: phaseColor }}>{big}</div>
         {seg.kind === "reps" && <div className="muted">reps, slow</div>}
-        {paused && <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "rgba(0,0,0,.55)", zIndex: 3, pointerEvents: "none" }}><div style={{ font: "700 2.4rem var(--font-num)" }}>PAUSED · TAP TO GO ON</div></div>}
+        {paused && <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "rgba(14,14,14,.9)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)", borderRadius: "var(--r-card)", zIndex: 3, pointerEvents: "none" }}><div style={{ font: "700 3rem var(--font-num)" }}>Paused</div></div>}
       </div>
 
       {seg.kind === "reps" && !paused && (
-        <button className="btn primary big" style={{ minHeight: 88, fontSize: "1.6rem", zIndex: 4 }} onClick={() => { spoken.current = -1; store({ seg: clock.seg + 1, segStartedAt: Date.now() }); }}>Done</button>
+        <button className="btn primary big" style={{ minHeight: 88, fontSize: "1.6rem", zIndex: 4 }} onClick={() => store({ seg: clock.seg + 1, segStartedAt: Date.now() })}>Done</button>
       )}
       {paused && (
-        <div style={{ display: "grid", gap: "var(--s2)", zIndex: 4 }}>
-          <button className="btn primary big" onClick={togglePause}>Continue</button>
-          <button className="btn big" onClick={() => finish(false)}>End and save</button>
-        </div>
+        <button className="btn big" style={{ zIndex: 4 }} onClick={() => finish(false)}>End and save</button>
       )}
-      {!paused && seg.kind !== "reps" && (
-        <div className="muted" style={{ textAlign: "center", fontSize: "1.1rem", minHeight: 56, display: "grid", placeItems: "center" }}>
-          {nextStep ? <>Next → <b style={{ color: "var(--ink)" }}>{EXERCISE_BY_ID[nextStep.exerciseId]?.name}</b></> : "Last one"}
+      {/* Bottom row: Back · what's next · Skip. */}
+      <div className="st-nav">
+        <button className="st-step" aria-label="Back to the previous move" onClick={() => go(-1)}><ChevronLeft size={26} aria-hidden /></button>
+        <div className="muted st-next">
+          {nextStep ? <>Next <b style={{ color: "var(--ink)" }}>{EXERCISE_BY_ID[nextStep.exerciseId]?.name}</b></> : "Last one"}
         </div>
-      )}
+        <button className="st-step" aria-label="Skip to the next move" onClick={() => go(1)}><ChevronRight size={26} aria-hidden /></button>
+      </div>
     </div>
   );
 }

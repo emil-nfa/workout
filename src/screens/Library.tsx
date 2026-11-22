@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
+import { useEdgeBack } from "../lib/gestures";
 import { ExerciseThumb, ExerciseVideo } from "../components/ExerciseVisual";
 import { BodyMap } from "../components/BodyMap";
 import { EXERCISES } from "../data/exercises";
@@ -79,8 +80,10 @@ export function Library() {
 }
 
 function Detail({ e, onBack }: { e: Exercise; onBack: () => void }) {
+  const page = useRef<HTMLElement>(null);
+  useEdgeBack(onBack, page);
   return (
-    <article className="prose">
+    <article className="prose" ref={page}>
       <button className="btn link" onClick={onBack} style={{ marginLeft: "calc(-1 * var(--s1))" }}>‹ Library</button>
       <h1>{e.name}</h1>
       <p className="lede">{e.fr}</p>

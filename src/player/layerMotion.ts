@@ -5,7 +5,6 @@
 import { useEffect, useRef } from "react";
 
 const EASE_OUT = "cubic-bezier(0.2, 0.9, 0.2, 1)";
-const EASE_IN_OUT = "cubic-bezier(0.4, 0, 0.2, 1)";
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -18,43 +17,60 @@ function pillClip(layer: HTMLElement): string | null {
   if (!p.width || !l.height) return null;
   const top = p.top - l.top, left = p.left - l.left;
   const right = l.width - (left + p.width), bottom = l.height - (top + p.height);
-  return `inset(${top}px ${right}px ${bottom}px ${left}px round 22px)`;
+  return `inset(${top}px ${right}px ${bottom}px ${left}px round ${p.height / 2}px)`;
 }
 
 const FULL = "inset(0px 0px 0px 0px round 0px)";
+// iOS's own sheet curve: quick start, long soft landing.
+const IOS = "cubic-bezier(0.32, 0.72, 0, 1)";
+const BG = "#0e0e0e", CLEAR = "rgba(14, 14, 14, 0)";
 
 export function animateOpen(layer: HTMLElement, from: "bottom" | "pill"): void {
   if (reduced()) return;
   const clip = from === "pill" ? pillClip(layer) : null;
   if (clip) {
-    layer.animate([{ clipPath: clip }, { clipPath: FULL }], { duration: 520, easing: EASE_OUT });
-    // The workout fades in as the pill grows (a class, because the content can mount a moment after the layer).
+    // The pill's dark body grows to fill the screen; the workout fades in once it's big enough to read.
+    layer.animate(
+      [
+        { clipPath: clip, backgroundColor: CLEAR },
+        { backgroundColor: BG, offset: 0.2 },
+        { clipPath: FULL, backgroundColor: BG },
+      ],
+      { duration: 520, easing: IOS },
+    );
     layer.classList.add("growing");
     window.setTimeout(() => layer.classList.remove("growing"), 520);
   } else {
-    layer.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: 440, easing: EASE_OUT });
+    layer.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: 480, easing: IOS });
   }
 }
 
 /** Resolves when the layer has left the screen. `dy` = how far a drag had already pulled it down. */
 export function animateClose(layer: HTMLElement, dy = 0): Promise<void> {
   if (reduced()) return Promise.resolve();
+  // Measure with the layer back in place (a drag leaves it shifted down, which threw the target off).
+  layer.style.transform = "";
+  layer.style.clipPath = "";
   const clip = pillClip(layer);
   const content = layer.firstElementChild as HTMLElement | null;
   const start = `translateY(${dy}px)`;
-  layer.style.transform = "";
+  const ms = clip ? 500 : 320;
   let a: Animation;
   if (clip) {
+    // Shrinks into the pill: the workout fades first, then the dark body melts into the pill underneath.
     a = layer.animate(
-      [{ transform: start, clipPath: `inset(0px 0px 0px 0px round ${dy ? 32 : 0}px)` }, { transform: "translateY(0)", clipPath: clip }],
-      { duration: 420, easing: EASE_IN_OUT, fill: "forwards" },
+      [
+        { transform: start, clipPath: `inset(0px 0px 0px 0px round ${dy ? 32 : 0}px)`, backgroundColor: BG },
+        { backgroundColor: BG, offset: 0.75 },
+        { transform: "translateY(0px)", clipPath: clip, backgroundColor: CLEAR },
+      ],
+      { duration: ms, easing: IOS, fill: "forwards" },
     );
-    content?.animate([{ opacity: 1 }, { opacity: 0, offset: 0.7 }, { opacity: 0 }], { duration: 420, fill: "forwards" });
+    content?.animate([{ opacity: 1 }, { opacity: 0, offset: 0.35 }, { opacity: 0 }], { duration: ms, fill: "forwards" });
   } else {
-    a = layer.animate([{ transform: start }, { transform: "translateY(100%)" }], { duration: 300, easing: "cubic-bezier(0.5, 0, 0.8, 0.4)", fill: "forwards" });
+    a = layer.animate([{ transform: start }, { transform: "translateY(100%)" }], { duration: ms, easing: "cubic-bezier(0.5, 0, 0.8, 0.4)", fill: "forwards" });
   }
   // Never wait on the animation alone (a paused or throttled page would leave the player stuck half-closed).
-  const ms = clip ? 420 : 300;
   return new Promise((resolve) => {
     let done = false;
     const finish = () => { if (!done) { done = true; resolve(); } };
