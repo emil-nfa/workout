@@ -3,7 +3,7 @@ import type { Program } from "./types";
 
 export const DEFAULT_PROGRAM: Program = {
   id: "default-v1",
-  version: "2026-11-21-research",
+  version: "2026-11-23-hack-backext",
   name: "Upper / Lower rotation",
   rotation: ["A", "B", "C", "D"],
   // Final program after the M0 research: research/PROGRAM.md §3 (timed at 50-56 min, weeks 3+).
@@ -21,10 +21,10 @@ export const DEFAULT_PROGRAM: Program = {
       ],
     },
     {
-      key: "B", title: "Lower 1", subtitle: "Squat pattern and core", kind: "lower",
+      key: "B", title: "Lower 1", subtitle: "Leg press, back extension, core", kind: "lower",
       slots: [
         { exerciseId: "leg_press", sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { exerciseId: "rdl", sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { exerciseId: "back_ext", sets: 3, repMin: 8, repMax: 15, restSec: 90 },
         { exerciseId: "leg_curl_seated", sets: 3, repMin: 10, repMax: 15, restSec: 90 },
         { exerciseId: "leg_ext", sets: 2, repMin: 10, repMax: 15, restSec: 90 },
         { exerciseId: "calf_stand", sets: 3, repMin: 8, repMax: 15, restSec: 60 },
@@ -45,9 +45,9 @@ export const DEFAULT_PROGRAM: Program = {
       ],
     },
     {
-      key: "D", title: "Lower 2", subtitle: "Hinge pattern and core", kind: "lower",
+      key: "D", title: "Lower 2", subtitle: "Hack squat, back extension, core", kind: "lower",
       slots: [
-        { exerciseId: "goblet_squat", sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { exerciseId: "hack_squat", sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         { exerciseId: "back_ext", sets: 3, repMin: 10, repMax: 15, restSec: 90 },
         { exerciseId: "bulgarian", sets: 2, repMin: 8, repMax: 12, perSide: true, restSec: 90 },
         { exerciseId: "leg_curl_lying", sets: 3, repMin: 10, repMax: 15, restSec: 90 },

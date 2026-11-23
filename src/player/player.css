@@ -126,6 +126,9 @@
 @keyframes sheet-up { from { transform: translateY(40%); opacity: 0.6; } }
 @keyframes fade-in { from { opacity: 0; } }
 .sheet h3 { margin: 0 0 var(--s2); font-size: 1rem; }
+/* Grab handle: the sheet can be pulled down to close. The touch area is taller than the bar. */
+.sheet-grab { position: relative; height: 20px; margin: calc(-1 * var(--s3)) 0 var(--s1); touch-action: none; }
+.sheet-grab::after { content: ""; position: absolute; left: 50%; top: 8px; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--rule); }
 .sheet .menu button { width: 100%; text-align: left; min-height: 52px; border: 0; border-bottom: 1px solid var(--rule); background: none; font-weight: 500; padding: 0 var(--s2); }
 .sheet .menu button.danger { color: var(--danger); }
 

@@ -280,7 +280,51 @@ const backExt = (() => {
   });
 })();
 
+// ---------- Hack squat (machine) ----------
+// "Back flat on the pad, shoulders under the pads, feet shoulder-width in the middle of the platform. Release the
+//  safety. Bend your knees and let the sled slide down the rails until your thighs are at least parallel, then push
+//  back up through the whole foot without locking the knees. Back stays on the pad the whole time."
+const hackSquat = (() => {
+  const a = 35; // the body leans back along the rails
+  const up: V3 = [-Math.sin(a * D), Math.cos(a * D), 0];
+  const back: V3 = [-Math.cos(a * D), -Math.sin(a * D), 0];
+  const ankle: V3 = [0, 0.08, 0];
+  const top = add(ankle, scale(up, 0.858));
+  const travel = 0.31;
+  const pelvisAt = (k: number) => add(top, scale(up, -travel * k));
+  const pose = (k: number): Pose => ({
+    root: { pos: pelvisAt(k), pitch: -a }, neck: { flex: 12 },
+    ...feet(0, 0.13, { toeOut: 10 }),
+    // Hands on the handles at the front of the shoulder pads.
+    armL: { flex: 12, abd: 38, elbow: 145 }, armR: { flex: 12, abd: 38, elbow: 145 },
+  });
+  return spec({
+    exerciseId: "hack_squat", timing: rep(1.8, 0.4, 1.2, 0.5, pose), arrowReverse: true,
+    items: [
+      floor(0, 0, 2.4),
+      { id: "platform", kind: "box", look: "metal", center: [0.02, 0.035, 0], size: [0.5, 0.07, 0.62] },
+      { id: "backpad", kind: "box", look: "pad", follow: "pelvis", center: add(scale(up, 0.33), scale(back, 0.15)), size: [0.08, 0.78, 0.44], rot: [0, 0, a] },
+      { id: "shoulderL", kind: "cyl", look: "pad", follow: "pelvis", a: add(add(scale(up, 0.62), scale(back, 0.03)), [0, 0, 0.13]), b: add(add(scale(up, 0.62), scale(back, -0.09)), [0, 0, 0.13]), r: 0.045 },
+      { id: "shoulderR", kind: "cyl", look: "pad", follow: "pelvis", a: add(add(scale(up, 0.62), scale(back, 0.03)), [0, 0, -0.13]), b: add(add(scale(up, 0.62), scale(back, -0.09)), [0, 0, -0.13]), r: 0.045 },
+      { id: "railL", kind: "cyl", look: "metal", a: add(add(ankle, scale(back, 0.24)), [0, 0, 0.34]), b: add(add(top, add(scale(up, 0.75), scale(back, 0.24))), [0, 0, 0.34]), r: 0.03 },
+      { id: "railR", kind: "cyl", look: "metal", a: add(add(ankle, scale(back, 0.24)), [0, 0, -0.34]), b: add(add(top, add(scale(up, 0.75), scale(back, 0.24))), [0, 0, -0.34]), r: 0.03 },
+    ],
+    views: [{ name: "Side 3/4", yaw: -30, elev: 12 }],
+    highlight: ["quads", "glutes"],
+    arrow: "pelvis",
+    contacts: [{ joint: "waist", item: "backpad", max: 0.14 }, { joint: "chest", item: "backpad", max: 0.16 }],
+    fixed: [{ joint: "ankleL", tol: 0.003 }, { joint: "ankleR", tol: 0.003 }],
+    touch: { backpad: ["torsoLow", "torsoUp", "head", "upperArmL", "upperArmR"], shoulderL: ["torsoUp", "upperArmL", "head"], shoulderR: ["torsoUp", "upperArmR", "head"], platform: ["footL", "footR"] },
+    checks: [
+      chk.angleAt("Not locked at the top: knees bent 5-25°", "kneeL", 0, 5, 25),
+      chk.angleAt("Deep at the bottom: knees bent 90-115°", "kneeL", 2.0, 90, 115),
+      chk.valueAlways("Torso keeps the pad angle (back stays on the pad)", (s) => Math.atan2(s.p.chest.x - s.p.pelvis.x, s.p.chest.y - s.p.pelvis.y) / D, -40, -30, "°"),
+      chk.valueAlways("Knees track over the toes (no caving)", (s) => s.p.kneeL.z - s.p.ankleL.z, -0.02, 0.2),
+    ],
+  });
+})();
+
 export const LOWER: Record<string, Motion> = {
   rdl, goblet_squat: goblet, leg_curl_seated: seatedKnee("leg_curl_seated"), leg_ext: seatedKnee("leg_ext"),
-  leg_curl_lying: legCurlLying, bulgarian, calf_stand: calfStand, calf_seated: calfSeated, back_ext: backExt,
+  leg_curl_lying: legCurlLying, bulgarian, calf_stand: calfStand, calf_seated: calfSeated, back_ext: backExt, hack_squat: hackSquat,
 };

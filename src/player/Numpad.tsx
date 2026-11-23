@@ -1,3 +1,4 @@
+import { Sheet } from "../components/Sheet";
 import { useState } from "react";
 import { Delete } from "lucide-react";
 import { db, type LoggedSet } from "../db/db";
@@ -71,8 +72,7 @@ export function Numpad({ row, rows, field, onField, perSideMode, increment, onCl
   const side = row.weight !== undefined && lt === "plate" ? platesPerSide(perSide(row.weight)) : null;
 
   return (
-    <div className="scrim" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={`Edit ${unit}`} onClick={(e) => e.stopPropagation()}>
+    <Sheet onClose={onClose} label={`Edit ${unit}`}>
         {fields.length > 1 && (
           <div className="pad-tabs">
             {fields.map(({ f, label }) => (
@@ -127,7 +127,6 @@ export function Numpad({ row, rows, field, onField, perSideMode, increment, onCl
           {hasPrev && <button className="btn" style={{ flex: 1 }} onClick={sameAsLast}>Same as last set</button>}
           <button className="btn primary" style={{ flex: 1, minHeight: 52 }} onClick={onClose}>Done</button>
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 }

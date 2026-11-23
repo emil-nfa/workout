@@ -646,6 +646,45 @@ export const EXERCISES: Exercise[] = [
     ]
   },
   {
+    "id": "hack_squat",
+    "name": "Hack squat (machine)",
+    "fr": "Hack squat (presse à squat guidée)",
+    "group": "Legs",
+    "muscles": "Quads, glutes, adductors",
+    "equipment": "Plate-loaded hack squat machine (sled on 45° rails)",
+    "loadType": "plate",
+    "tags": [
+      "machine"
+    ],
+    "where": "gym",
+    "primary": [
+      "quads",
+      "glutes"
+    ],
+    "secondary": [
+      "adductors"
+    ],
+    "how": [
+      "Back flat on the pad, shoulders under the shoulder pads, feet shoulder-width in the middle of the platform, toes slightly out.",
+      "Stand up to lift the sled and release the safety handles.",
+      "Bend your knees and let the sled slide down until your thighs are at least parallel to the platform, as deep as your lower back stays on the pad.",
+      "Push back up through the whole foot. Stop just short of locking the knees, then lock the safeties before stepping out."
+    ],
+    "cues": [
+      "Knees follow your toes.",
+      "Lower in 2-3 s, no bounce at the bottom."
+    ],
+    "avoid": [
+      "Heels lifting off the platform.",
+      "Lower back or hips peeling off the pad at the bottom."
+    ],
+    "alternative": "Leg press",
+    "machine": "Plate-loaded hack squat (Hammer Strength or similar)",
+    "sources": [
+      "R-load-1"
+    ]
+  },
+  {
     "id": "goblet_squat",
     "name": "Goblet squat",
     "fr": "Squat goblet (haltère)",
@@ -950,13 +989,13 @@ export const EXERCISES: Exercise[] = [
       "upperBack"
     ],
     "how": [
-      "Pad just below your hip bones, heels against the plate, arms crossed on your chest.",
+      "Pad just below your hip bones, heels against the plate. Hold a weight plate flat against your chest (or cross your arms with no weight).",
       "Bend at the hips and lower your torso as far as feels good.",
       "Come up until your body is in one straight line, then squeeze your upper back (shoulder blades together) for 1 s."
     ],
     "cues": [
       "Don't over-arch past straight.",
-      "Later: hold a weight plate on your chest."
+      "Add weight with a heavier plate once 15 reps feel easy."
     ],
     "avoid": [
       "Hyper-extending the lower back at the top."

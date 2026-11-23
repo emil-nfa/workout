@@ -46,10 +46,7 @@ test("a full week of training, then backup and restore", async ({ page, browser 
   await expect(page.locator(".wk-head .title")).toHaveText(/A · Upper 1/);
   await expect(page.locator("#card-0 .chip.focus")).toHaveText("Add 2.5 kg");
   await expect(page.locator("#card-0 .val").first()).toContainText("22.5");
-  // Make it a deload: half the sets, a deload chip.
-  await page.getByRole("button", { name: "Workout options" }).click();
-  await page.getByRole("button", { name: /Make it a deload/ }).click();
-  await expect(page.locator("#card-0").getByText("Deload")).toBeVisible();
+  // Discard it (the deload switch was removed from this menu at the user's request).
   await page.getByRole("button", { name: "Workout options" }).click();
   await page.getByRole("button", { name: "Discard workout" }).click();
   await page.getByRole("button", { name: /Tap again to discard/ }).click();

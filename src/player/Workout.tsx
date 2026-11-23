@@ -1,3 +1,4 @@
+import { Sheet, useSheetClose } from "../components/Sheet";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Check, ChevronDown, MoreVertical, StickyNote } from "lucide-react";
@@ -307,11 +308,9 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       )}
 
       {menu && (
-        <div className="scrim" onClick={() => setMenu(null)}>
-          <div className="sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <MenuBody menu={menu} session={session} ps={ps} rows={rows} info={info} setMenu={setMenu} addSet={addSet} onFinish={() => { setMenu(null); setFinishing(true); }} />
-          </div>
-        </div>
+        <Sheet onClose={() => setMenu(null)}>
+          <MenuBody menu={menu} session={session} ps={ps} rows={rows} info={info} setMenu={setMenu} addSet={addSet} onFinish={() => { setMenu(null); setFinishing(true); }} />
+        </Sheet>
       )}
     </div>
   );
@@ -335,6 +334,7 @@ function MenuBody({ menu, session, ps, rows, info, setMenu, addSet, onFinish }: 
   setMenu: (m: Menu | null) => void; addSet: (slot: number, type?: SetType) => Promise<void>; onFinish: () => void;
 }) {
   const { setPlayer } = useApp();
+  const closeSheet = useSheetClose();
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [note, setNote] = useState("");
 
@@ -343,9 +343,6 @@ function MenuBody({ menu, session, ps, rows, info, setMenu, addSet, onFinish }: 
       <div className="menu">
         <h3>Workout</h3>
         <button onClick={onFinish}>Finish workout</button>
-        <button onClick={async () => { await db.sessions.update(session.id, { deload: !session.deload }); await db.sets.where("sessionId").equals(session.id).filter((r) => !r.done && !r.edited).delete(); setMenu(null); }}>
-          {session.deload ? "Make it a normal session" : "Make it a deload (half the sets, easy)"}
-        </button>
         {!confirmDiscard ? (
           <button className="danger" onClick={() => setConfirmDiscard(true)}>Discard workout</button>
         ) : (
@@ -390,7 +387,7 @@ function MenuBody({ menu, session, ps, rows, info, setMenu, addSet, onFinish }: 
         <ol style={{ paddingLeft: "1.2em" }}>{e.how.map((x, i) => <li key={i} style={{ marginBottom: 6 }}>{x}</li>)}</ol>
         {!!e.cues.length && <p><b>Cues:</b> {e.cues.join(" ")}</p>}
         {!!e.avoid.length && <p><b>Avoid:</b> {e.avoid.join(" ")}</p>}
-        <button className="btn big" style={{ marginTop: "var(--s3)" }} onClick={() => setMenu(null)}>Close</button>
+        <button className="btn big" style={{ marginTop: "var(--s3)" }} onClick={closeSheet}>Close</button>
       </div>
     );
   }

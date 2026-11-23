@@ -166,8 +166,8 @@ body { min-height: 100%; }
   background: #0e0e0e; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
 }
 .player-layer.out { pointer-events: none; }
-.player-layer.growing > * { animation: grow-content 520ms ease-out both; }
-@keyframes grow-content { 0%, 30% { opacity: 0; } 100% { opacity: 1; } }
+/* Plain dark panel that draws the pill morph (src/player/layerMotion.ts). */
+.player-ghost { position: fixed; z-index: 52; top: 0; left: 0; right: 0; height: 100lvh; background: #0e0e0e; pointer-events: none; will-change: clip-path, transform, opacity; }
 
 /* Reading text (exercise pages, Learn): more air between lines and paragraphs. */
 .prose { line-height: 1.6; }

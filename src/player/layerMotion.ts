@@ -4,7 +4,6 @@
 // - Minimise (chevron or a downward swipe): shrinks back into the pill; with no pill to go to, slides down.
 import { useEffect, useRef } from "react";
 
-const EASE_OUT = "cubic-bezier(0.2, 0.9, 0.2, 1)";
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -25,58 +24,81 @@ const FULL = "inset(0px 0px 0px 0px round 0px)";
 const IOS = "cubic-bezier(0.32, 0.72, 0, 1)";
 const BG = "#0e0e0e", CLEAR = "rgba(14, 14, 14, 0)";
 
+/**
+ * The pill morph is drawn by a plain dark "ghost" panel, not by the workout screen itself: animating the clip of a
+ * solid panel is cheap, while clipping the whole workout (videos, lists) every frame made the motion stutter.
+ */
+let opening: { g: HTMLDivElement; layer: HTMLElement } | null = null;
+/** True while the grow-from-pill animation runs (drags are ignored until it ends). */
+export const isOpening = () => !!opening;
+function ghost(): HTMLDivElement {
+  const g = document.createElement("div");
+  g.className = "player-ghost";
+  document.body.appendChild(g);
+  return g;
+}
+const done = (a: Animation, ms: number) => new Promise<void>((res) => {
+  let over = false;
+  const fin = () => { if (!over) { over = true; res(); } };
+  a.finished.then(fin, fin);
+  window.setTimeout(fin, ms + 120); // never hang on a paused page
+});
+
 export function animateOpen(layer: HTMLElement, from: "bottom" | "pill"): void {
   if (reduced()) return;
   const clip = from === "pill" ? pillClip(layer) : null;
-  if (clip) {
-    // The pill's dark body grows to fill the screen; the workout fades in once it's big enough to read.
-    layer.animate(
-      [
-        { clipPath: clip, backgroundColor: CLEAR },
-        { backgroundColor: BG, offset: 0.2 },
-        { clipPath: FULL, backgroundColor: BG },
-      ],
-      { duration: 520, easing: IOS },
-    );
-    layer.classList.add("growing");
-    window.setTimeout(() => layer.classList.remove("growing"), 520);
-  } else {
+  if (!clip) {
     layer.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: 480, easing: IOS });
+    return;
   }
+  // The pill's dark body grows to fill the screen, then the workout fades in on top of it.
+  layer.style.opacity = "0";
+  const g = ghost();
+  g.style.zIndex = "49"; // under the workout layer, so the workout can fade in on top of it
+  const me = { g, layer };
+  opening = me;
+  const grow = g.animate(
+    [{ clipPath: clip, backgroundColor: CLEAR }, { backgroundColor: BG, offset: 0.15 }, { clipPath: FULL, backgroundColor: BG }],
+    { duration: 460, easing: IOS, fill: "forwards" },
+  );
+  // The iOS curve covers most of the distance in the first half: fade the workout in from there, no black pause.
+  window.setTimeout(() => {
+    if (opening !== me) return; // a close took over
+    layer.style.opacity = "";
+    const show = layer.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+    void Promise.all([done(show, 220), done(grow, 460)]).then(() => { g.remove(); if (opening === me) opening = null; });
+  }, 200);
 }
 
 /** Resolves when the layer has left the screen. `dy` = how far a drag had already pulled it down. */
-export function animateClose(layer: HTMLElement, dy = 0): Promise<void> {
-  if (reduced()) return Promise.resolve();
-  // Measure with the layer back in place (a drag leaves it shifted down, which threw the target off).
-  layer.style.transform = "";
-  layer.style.clipPath = "";
-  const clip = pillClip(layer);
-  const content = layer.firstElementChild as HTMLElement | null;
-  const start = `translateY(${dy}px)`;
-  const ms = clip ? 500 : 320;
-  let a: Animation;
-  if (clip) {
-    // Shrinks into the pill: the workout fades first, then the dark body melts into the pill underneath.
-    a = layer.animate(
-      [
-        { transform: start, clipPath: `inset(0px 0px 0px 0px round ${dy ? 32 : 0}px)`, backgroundColor: BG },
-        { backgroundColor: BG, offset: 0.75 },
-        { transform: "translateY(0px)", clipPath: clip, backgroundColor: CLEAR },
-      ],
-      { duration: ms, easing: IOS, fill: "forwards" },
-    );
-    content?.animate([{ opacity: 1 }, { opacity: 0, offset: 0.35 }, { opacity: 0 }], { duration: ms, fill: "forwards" });
-  } else {
-    a = layer.animate([{ transform: start }, { transform: "translateY(100%)" }], { duration: ms, easing: "cubic-bezier(0.5, 0, 0.8, 0.4)", fill: "forwards" });
+export async function animateClose(layer: HTMLElement, dy = 0): Promise<void> {
+  // A close during the open animation: drop the opening panel and start from the real screen.
+  if (opening) { opening.g.remove(); opening.layer.style.opacity = ""; opening = null; }
+  if (reduced()) return;
+  layer.style.transition = "";
+  const clip = (() => { const t = layer.style.transform; layer.style.transform = ""; const c = pillClip(layer); layer.style.transform = t; return c; })();
+  if (!clip) {
+    layer.style.transform = "";
+    const a = layer.animate([{ transform: `translateY(${dy}px)` }, { transform: "translateY(100%)" }], { duration: 320, easing: "cubic-bezier(0.5, 0, 0.8, 0.4)", fill: "forwards" });
+    return done(a, 320);
   }
-  // Never wait on the animation alone (a paused or throttled page would leave the player stuck half-closed).
-  return new Promise((resolve) => {
-    let done = false;
-    const finish = () => { if (!done) { done = true; resolve(); } };
-    a.finished.then(finish, finish);
-    window.setTimeout(finish, ms + 120);
-  });
+  // 1. A dark panel fades in over the workout, where the drag left it.
+  const g = ghost();
+  g.style.transform = `translateY(${dy}px)`;
+  await done(g.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 110, fill: "forwards" }), 110);
+  layer.style.visibility = "hidden";
+  layer.style.transform = "";
+  // 2. That panel shrinks into the pill and melts into it.
+  const shrink = g.animate(
+    [
+      { transform: `translateY(${dy}px)`, clipPath: `inset(0px 0px 0px 0px round ${dy ? 40 : 0}px)`, backgroundColor: BG },
+      { backgroundColor: BG, offset: 0.8 },
+      { transform: "translateY(0px)", clipPath: clip, backgroundColor: CLEAR },
+    ],
+    { duration: 460, easing: IOS, fill: "forwards" },
+  );
+  await done(shrink, 460);
+  window.setTimeout(() => g.remove(), 50);
 }
 
 /**
@@ -94,7 +116,7 @@ export function useDragToClose(ref: React.RefObject<HTMLElement>, active: boolea
     const start = (e: TouchEvent) => {
       const t = e.target as HTMLElement;
       // Never steal touches from sheets, the rest bar or the number pad.
-      eligible = e.touches.length === 1 && !t.closest(".scrim, .rest, .sheet, [role='dialog'], input, textarea")
+      eligible = e.touches.length === 1 && !opening && !t.closest(".scrim, .rest, .sheet, [role='dialog'], input, textarea")
         && (!!t.closest(".wk-head") || el.scrollTop <= 0);
       if (!eligible) return;
       y0 = lastY = e.touches[0].clientY; x0 = e.touches[0].clientX; t0 = lastT = e.timeStamp; dy = 0; dragging = false; vel = 0;
@@ -104,29 +126,32 @@ export function useDragToClose(ref: React.RefObject<HTMLElement>, active: boolea
       const y = e.touches[0].clientY, x = e.touches[0].clientX;
       const d = y - y0;
       if (!dragging) {
-        if (d > 8 && Math.abs(d) > Math.abs(x - x0) * 1.2) dragging = true;
-        else if (d < -4 || Math.abs(x - x0) > 12) { eligible = false; return; }
-        else return;
+        // Upward or sideways: it's a scroll or a tap, let it be.
+        if (d < 0 || Math.abs(x - x0) > Math.abs(d) + 6) { eligible = false; return; }
+        // Downward: claim it at once, or iOS starts its own bounce scroll and both move (the old glitch).
+        e.preventDefault();
+        if (d < 6) return;
+        dragging = true;
+        el.style.willChange = "transform";
       }
       e.preventDefault();
-      dy = Math.max(0, d);
+      dy = Math.max(0, d - 6);
       const dt = e.timeStamp - lastT;
       if (dt > 0) vel = (y - lastY) / dt;
       lastY = y; lastT = e.timeStamp;
       el.style.transform = `translateY(${dy}px)`;
-      el.style.clipPath = `inset(0px 0px 0px 0px round ${Math.min(32, dy / 4)}px)`;
     };
     const end = () => {
       if (!eligible || !dragging) { eligible = false; return; }
       eligible = dragging = false;
+      el.style.willChange = "";
       const h = el.getBoundingClientRect().height || 800;
-      el.style.clipPath = "";
       if (dy > h / 6 || (dy > 40 && vel > 0.5) || e_t0_quick()) {
         close.current(dy);
       } else {
         const from = dy;
         el.style.transform = "";
-        el.animate([{ transform: `translateY(${from}px)` }, { transform: "translateY(0)" }], { duration: 260, easing: EASE_OUT });
+        el.animate([{ transform: `translateY(${from}px)` }, { transform: "translateY(0)" }], { duration: 300, easing: IOS });
       }
     };
     const e_t0_quick = () => dy > 60 && lastT - t0 < 180;
@@ -140,7 +165,8 @@ export function useDragToClose(ref: React.RefObject<HTMLElement>, active: boolea
       el.removeEventListener("touchmove", move);
       el.removeEventListener("touchend", end);
       el.removeEventListener("touchcancel", end);
-      el.style.transform = ""; el.style.clipPath = "";
+      // Don't reset the transform here: this runs as the close starts, and the close animation picks up from it.
+      el.style.willChange = "";
     };
   }, [ref, active]);
 }
