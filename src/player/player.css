@@ -17,11 +17,7 @@
 
 .warm { margin: var(--s3) 0; background: var(--surface); border-radius: var(--r-card); }
 .warm-head { width: 100%; min-height: 52px; display: flex; align-items: center; padding: 0 var(--s3); font-weight: 600; border: 0; background: none; color: inherit; text-align: left; }
-/* Smooth fold: animates the row height from its content size to 0 (and back). */
-.fold { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows 320ms cubic-bezier(0.3, 0.7, 0.2, 1), opacity 240ms; }
-.fold.closed { grid-template-rows: 0fr; opacity: 0; }
-.fold > div { overflow: hidden; min-height: 0; }
-@media (prefers-reduced-motion: reduce) { .fold { transition: none; } }
+/* Folds: src/components/Fold.tsx (transform-only FLIP, no height animation). */
 .warm ul { list-style: none; margin: 0; padding: 0 var(--s3) var(--s2); }
 .warm label { display: flex; gap: var(--s3); align-items: center; min-height: var(--tap); }
 .warm input { width: 22px; height: 22px; accent-color: var(--accent); }
@@ -91,7 +87,7 @@
 .rest {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
   background: var(--surface2); border-radius: 32px 32px 0 0; box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
-  animation: rest-in 280ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  animation: rest-in 420ms cubic-bezier(0.32, 0.72, 0, 1);
   padding: var(--s2) var(--s3) calc(var(--safe-b) + var(--s2));
   overflow: hidden;
 }
@@ -120,10 +116,10 @@
   width: 100%; max-width: 720px; margin: 0 auto; background: var(--surface); border-radius: 32px 32px 0 0;
   padding: var(--s3) var(--s3) calc(var(--safe-b) + var(--s3)); max-height: 92dvh; overflow-y: auto;
   overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
-  animation: sheet-up 300ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  animation: sheet-up 480ms cubic-bezier(0.32, 0.72, 0, 1);
 }
-.scrim { animation: fade-in 220ms ease-out; }
-@keyframes sheet-up { from { transform: translateY(40%); opacity: 0.6; } }
+.scrim { animation: fade-in 300ms ease-out; }
+@keyframes sheet-up { from { transform: translateY(100%); } }
 @keyframes fade-in { from { opacity: 0; } }
 .sheet h3 { margin: 0 0 var(--s2); font-size: 1rem; }
 /* Grab handle: the sheet can be pulled down to close. The touch area is taller than the bar. */

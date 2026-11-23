@@ -10,7 +10,7 @@ import { Library } from "./screens/Library";
 import { Me } from "./screens/Me";
 import { Onboarding } from "./screens/Onboarding";
 import { Player, MiniPlayer } from "./player/Player";
-import { animateClose, animateOpen, useDragToClose } from "./player/layerMotion";
+import { animateClose, animateOpen, startPillOpen, useDragToClose } from "./player/layerMotion";
 import { AppContext, type PlayerState, type Tab } from "./state";
 import { scrollTop } from "./lib/scroll";
 
@@ -44,7 +44,14 @@ export default function App() {
   const setPlayer = (p: PlayerState, from?: "pill") => {
     const cur = playerRef.current;
     if (cur.open && !p.open) return close(p);
-    if (!cur.open && p.open) openFrom.current = from ?? "bottom";
+    if (!cur.open && p.open) {
+      openFrom.current = from ?? "bottom";
+      // From the pill: start the GPU morph first, build the workout screen two frames later (it takes ~70 ms).
+      if (from === "pill" && startPillOpen()) {
+        requestAnimationFrame(() => requestAnimationFrame(() => setPlayerRaw(p)));
+        return;
+      }
+    }
     setPlayerRaw(p);
   };
   useLayoutEffect(() => {

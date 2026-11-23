@@ -1,3 +1,4 @@
+import { Fold } from "../components/Fold";
 import { Sheet, useSheetClose } from "../components/Sheet";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -32,11 +33,9 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   const [pad, setPad] = useState<{ rowId: string; field: PadField; thenTick?: boolean } | null>(null);
   const [warmOpen, setWarmOpen] = useState(true);
   const [menu, setMenu] = useState<{ kind: "exercise"; slot: number } | { kind: "set"; rowId: string } | { kind: "swap"; slot: number } | { kind: "how"; exerciseId: string } | { kind: "session" } | null>(null);
-  const [toast, setToast] = useState<{ text: string; undo?: () => void; leaving?: boolean } | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [finishing, setFinishing] = useState(false);
   const [warmDone, setWarmDone] = useState<Set<number>>(new Set());
-  const toastTimer = useRef<number>();
 
   // Plan the rows (suggestions) once per session, and whenever a slot has none (after a swap).
   const swapKey = JSON.stringify(session.swaps ?? {});
@@ -84,16 +83,6 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
   const plateMode = (id: string) => prefOf(id)?.loadMode ?? settings.plateMode;
   const restFor = (slot: number, exId: string) => prefOf(exId)?.restSec ?? ps.slots[slot].restSec;
 
-  function showToast(text: string, undo?: () => void) {
-    window.clearTimeout(toastTimer.current);
-    setToast({ text, undo });
-    // Shown 2.5 s, then fades up and away.
-    toastTimer.current = window.setTimeout(() => {
-      setToast((t) => (t ? { ...t, leaving: true } : t));
-      toastTimer.current = window.setTimeout(() => setToast(null), 320);
-    }, 2500);
-  }
-
   async function tick(r: LoggedSet) {
     const lt = EXERCISE_BY_ID[r.exerciseId]?.loadType ?? "stack";
     if (r.done) {
@@ -129,7 +118,6 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       else if (!nextRow) await db.meta.delete("rest");
     });
 
-    showToast(`Set logged`, async () => { await db.sets.update(r.id, { done: false, at: undefined }); setExpanded((e) => new Set(e).add(r.slot)); });
 
     // Collapse + auto-scroll only when the LAST set of the current exercise is ticked.
     const slotDone = all.filter((x) => x.slot === r.slot).every((x) => x.done);
@@ -143,7 +131,10 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
         const head = document.querySelector<HTMLElement>(".wk-head");
         const box = document.getElementById("player");
         if (!card || !box) return;
-        const y = card.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - (head?.getBoundingClientRect().height ?? 0) - 8;
+        // Layout position (offsetTop), not the drawn one: the card may still be gliding into place.
+        let top = 0;
+        for (let el: HTMLElement | null = card; el && el !== box; el = el.offsetParent as HTMLElement | null) top += el.offsetTop;
+        const y = top - (head?.offsetHeight ?? 0) - 8;
         box.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
       }, reduce ? 0 : 340);
     }
@@ -183,7 +174,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
           Warm-up · 7 min <span className="muted" style={{ marginLeft: "auto", fontWeight: 500 }}>{warmDone.size}/{WARMUPS[ps.kind].length}</span>
           <ChevronDown size={18} aria-hidden style={{ marginLeft: 8, transition: "transform 300ms", transform: warmOpen ? "rotate(180deg)" : "none" }} />
         </button>
-        <div className={`fold${warmOpen ? "" : " closed"}`}><div><ul>
+        <Fold open={warmOpen}><ul>
           {WARMUPS[ps.kind].map((w, i) => (
             <li key={i}>
               <label>
@@ -192,7 +183,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
               </label>
             </li>
           ))}
-        </ul></div></div>
+        </ul></Fold>
       </section>
 
       {ps.slots.map((slot, i) => {
@@ -216,7 +207,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
         const swapped = exId !== slot.exerciseId;
 
         return (
-          <section key={i} id={`card-${i}`} className={`card${collapsed ? " collapsed" : ""}`} aria-label={ex?.name}>
+          <section key={i} data-flip id={`card-${i}`} className={`card${collapsed ? " collapsed" : ""}`} aria-label={ex?.name}>
             <div className="card-top" onClick={collapsed ? () => setExpanded((e) => new Set(e).add(i)) : undefined}>
               <button className="thumb" style={{ padding: 0, overflow: "hidden" }} aria-label={`How to do ${ex?.name}`} onClick={() => setMenu({ kind: "how", exerciseId: exId })}><ExerciseThumb id={exId} label={ex?.group.slice(0, 4).toUpperCase()} /></button>
               <div className="card-name">
@@ -237,7 +228,7 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
               <button className="icon-btn" aria-label={`${ex?.name} options`} onClick={() => setMenu({ kind: "exercise", slot: i })}><MoreVertical aria-hidden /></button>
             </div>
 
-            <div className={`fold${collapsed ? " closed" : ""}`}><div>
+            <Fold open={!collapsed}>
             <div className="sets" role="table" aria-label={`${ex?.name} sets`}>
               <div className={`set-h ${rowClass}`} role="row">
                 <span role="columnheader">Set</span><span role="columnheader">Previous</span>
@@ -274,12 +265,12 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
               })}
               <button className="add-set" onClick={() => addSet(i)}>+ Set</button>
             </div>
-            </div></div>
+            </Fold>
           </section>
         );
       })}
 
-      <div style={{ padding: "var(--s5) 0" }}>
+      <div data-flip style={{ padding: "var(--s5) 0" }}>
         <button className="btn primary big" onClick={() => setFinishing(true)}>Finish workout</button>
       </div>
 
@@ -300,13 +291,6 @@ export function Workout({ session, ps }: { session: WorkoutSession; ps: ProgramS
       )}
 
       {rest && <RestBar rest={rest} />}
-      {toast && (
-        <div className={`toast${toast.leaving ? " leaving" : ""}`} role="status">
-          {toast.text}
-          {toast.undo && <button onClick={() => { toast.undo!(); setToast(null); }}>Undo</button>}
-        </div>
-      )}
-
       {menu && (
         <Sheet onClose={() => setMenu(null)}>
           <MenuBody menu={menu} session={session} ps={ps} rows={rows} info={info} setMenu={setMenu} addSet={addSet} onFinish={() => { setMenu(null); setFinishing(true); }} />
